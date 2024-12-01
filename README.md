@@ -50,7 +50,7 @@ tasks: # repo/placeholder in URL is special-case, to be replaced with the actual
   - assess_files:
       parent: commits
       category: LLM Decision
-      base_url: https://github.com/repo/placeholder/pulls/files
+      base_url: https://github.com/repo/placeholder/files
   - risk_detective:
       category: Agent Task
       base_url: https://yamllms.ai/risk/assess
