@@ -1,3 +1,4 @@
+import os
 from django.core.management.base import BaseCommand
 from missions.models import MissionInfo
 from missions.hub import fulfil_mission
@@ -22,6 +23,8 @@ class Command(BaseCommand):
         log("Reporting on", selected)
         mission_info = MissionInfo.objects.get(name=GENERIC_MISSION)
         mission = mission_info.create_mission()
+        if "NVIDIA_API_KEY" in os.environ and not "OPENAI_API_KEY" in os.environ:
+            mission.base_llm = "nvidia/llama-3.1-nemotron-70b-instruct"
         mission.flags["github"] = selected
         mission.save()
 

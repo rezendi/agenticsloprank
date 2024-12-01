@@ -325,7 +325,9 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 
 # Prompts
 
-GITHUB_PROMPTS_REPO = os.environ.get("GITHUB_PROMPTS_REPO", "rezendi/yamllms-prompts")
+GITHUB_PROMPTS_REPO = os.environ.get(
+    "GITHUB_PROMPTS_REPO", "thedispatch/yamllms-prompts"
+)
 
 # Use Azure OpenAI, just hard-code for now
 
