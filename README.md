@@ -19,7 +19,7 @@ mission: "GitHub Repo Analysis"
 description: Analyze a GitHub repository and generate an insightful report
 base_llm: gpt-4o
 base_prompt: final-oss
-flags: { "example_flag": "example_value" }
+flags: { "repo_in_name": "true" }
 tasks: # repo/placeholder in URL is special-case, to be replaced with the actual repo
   - readme:
       category: API
@@ -145,10 +145,10 @@ mission: "GitHub Repo Analysis"
 description: Analyze a GitHub repository and generate an insightful report
 base_llm: gpt-4o
 base_prompt: final-oss
-flags: { "example_flag": "example_value" }
+flags: { "repo_in_name": "true" }
 ```
 
-A name, a description, which LLM to use; pretty straightforward. There is also a "base prompt," which is the prompt to use for the mission's final LLM report task, if any. Prompts can be explicitly included in the YAML, or, for more sophisticated installations, stored in a separate repository and accessed at runtime when missions and tasks are created, so they can be independently administered and version-controlled. (You can also keep them in the same repo if you really want.) More on that below. The key `final-oss` here maps to the file `final-oss.md` in the prompts repo, which by default is [https://github.com/rezendi/yamllms-prompts](https://github.com/rezendi/yamllms-prompts).
+A name, a description, which LLM to use; pretty straightforward. There is also a "base prompt," which is the prompt to use for the mission's final LLM report task, if any. Prompts can be explicitly included in the YAML, or, for more sophisticated installations, stored in a separate repository and accessed at runtime when missions and tasks are created, so they can be independently administered and version-controlled. (You can also keep them in the same repo if you really want.) More on that below. The key `final-oss` here maps to the file `final-oss.md` in the prompts repo, which by default is [https://github.com/rezendi/yamllms-prompts](https://github.com/rezendi/yamllms-prompts). `repo_in_name` is a special case used for reports on GitHub repos, which illustrates the use of `flags`.
 
 Now let's look at a few of the tasks:
 

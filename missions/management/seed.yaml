@@ -2,7 +2,7 @@ mission: "GitHub Repo Analysis"
 description: Analyze a GitHub repository and generate an insightful report
 base_llm: gpt-4o
 base_prompt: final-oss
-flags: { "example_flag": "example_value" }
+flags: { "repo_in_name": "true" }
 tasks: # repo/placeholder in URL is special-case, to be replaced with the actual repo
   - readme:
       category: API

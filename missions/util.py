@@ -763,13 +763,10 @@ def get_repo_name_from_url(url):
 
 def correct_name(mission):
     name = mission.name
-    target = mission.get_repo()
-    if target and target not in name:
-        if mission.flags.get("repo_in_name") == "true":
-            name = f"{name.split(':')[0]}: {target}"
-    if target and target not in name:
-        if name.endswith("Generic"):
-            name = name.replace("Generic", target)
+    if mission.flags.get("repo_in_name") == "true":
+        target = mission.get_repo()
+        if target and target not in name:
+            name = f"{name}: {target}"
     if mission.is_duplicate() and not name.endswith(" (Copy)"):
         name += " (Copy)"
     return name

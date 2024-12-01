@@ -27,13 +27,6 @@
   </div>
   <div class="main mild-border mt-6">
     <h3 class="text-left">{{ mission.name_with_link | safe}}</h3>
-    {% if not request.user.is_staff %}
-    <div>
-      Stay on this page to "watch" the report being generated;
-      or, go about your life and it will be emailed to you when it's done
-      (5-10 minutes depending on how much data needs to be crunched.)
-    </div>
-    {% endif %}
     <div>
       <h3 class="text-left">Tasks</h3>
       <section id="task-body"></section>
