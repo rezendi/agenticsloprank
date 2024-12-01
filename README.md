@@ -8,10 +8,58 @@ These missions are broken down into sets of individual tasks, such as fetching d
 
 1. Fetches a public GitHub repo's README, recent commits, issues, and pull requests
 2. Generates reports for each dataset, and assess and quantifies the commits and PRs
-3. Runs a recursive agent to assess the potential risks this project may face
-4. Summarizes all of the above in a final report
+3. Fetches several recently modified files and assess their code quality
+4. Runs a recursive agent to assess the potential risks this project may face
+5. Summarizes all of the above in a final report
 
-...is only 40 lines long.
+...is only 44 lines long:
+
+```yaml
+mission: "GitHub Repo Analysis"
+description: Analyze a GitHub repository and generate an insightful report
+base_llm: gpt-4o
+base_prompt: final-oss
+flags: { "example_flag": "example_value" }
+tasks: # repo/placeholder in URL is special-case, to be replaced with the actual repo
+  - readme:
+      category: API
+      base_url: https://github.com/repo/placeholder/README
+      report: key_context # this report will be used as context for all other reports
+  - commits:
+      category: API
+      base_url: https://github.com/repo/placeholder/commits
+      report: yes
+  - issues:
+      category: API
+      base_url: https://github.com/repo/placeholder/issues
+      report: yes
+  - pulls:
+      category: API
+      base_url: https://github.com/repo/placeholder/pulls
+      report: yes
+  - quantify_commits:
+      parent: commits
+      category: Quantified Report
+  - assess_prs:
+      parent: pulls
+      category: LLM Rating
+      base_url: https://github.com/repo/placeholder/pulls/assess
+  - quantify_prs:
+      parent: assess_prs
+      category: Quantified Report
+  - assess_files:
+      parent: commits
+      category: LLM Decision
+      base_url: https://github.com/repo/placeholder/pulls/files
+  - risk_detective:
+      category: Agent Task
+      base_url: https://yamllms.ai/risk/assess
+  - quantify_risks:
+      parent: risk_detective
+      category: Quantified Report
+      base_url: https://yamllms.ai/risk/quantify
+      flags: { "max_iterations": 8 }
+```
 
 Obviously the framework is optimized for such missions (which were the basis for [Dispatch AI](https://thedispatch.ai/), from which YamLLMs was birthed) but our flexible approach allows anyone to easily add on custom tasks, data sources, LLMs, prompts, and other integrations as (optionally closed-source) plugins. Every mission, task, and LLM input/output is stored in the database for future and/or time-series analysis; alternatively, it is very easy to delete the input data and retain only the LLM outputs for data security purposes.
 
@@ -43,7 +91,7 @@ To install YamLLMs locally and run a sophisticated LLM analysis of a public GitH
 
 Pull this repo down to your local machine, and in its root directory, save a `.env` file with the following environment variables:
 
-- `OPENAI_API_KEY` (if you have one) or `NVIDIA_API_KEY` (freely available [here](https://build.nvidia.com/nvidia/llama-3_1-nemotron-70b-instruct))
+- `OPENAI_API_KEY` (if you have one) or `NVIDIA_API_KEY` (available for free [here](https://build.nvidia.com/nvidia/llama-3_1-nemotron-70b-instruct))
 - `GITHUB_TOKEN` (a GitHub [Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens); these too are free)
 
 (GitHub kindly allows a tiny number of unauthorized API calls, so you can actually get things running without any of the above, but you will likely hit GitHub rate limits before you are rejected by the LLM API for the lack of a key.)
