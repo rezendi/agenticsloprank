@@ -103,8 +103,6 @@ def run_llm_report(task):
         previous_response = previous.response or "" if previous else ""
         input_data = prompt % (days, input_data) + previous_response
         log("Time series analysis, days:", days)
-    else:
-        log("Not a time series task")
 
     if task.mission.flags.get("append_date_to_prompt") == "true":
         input_data += (

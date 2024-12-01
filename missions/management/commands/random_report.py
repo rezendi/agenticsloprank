@@ -24,7 +24,7 @@ class Command(BaseCommand):
         mission_info = MissionInfo.objects.get(name=GENERIC_MISSION)
         mission = mission_info.create_mission()
         if "NVIDIA_API_KEY" in os.environ and not "OPENAI_API_KEY" in os.environ:
-            mission.base_llm = "nvidia/llama-3.1-nemotron-70b-instruct"
+            mission.llm = "nvidia/llama-3.1-nemotron-70b-instruct"
         mission.flags["github"] = selected
         mission.save()
 
