@@ -1,8 +1,8 @@
+from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.template import loader
-import openai
 
 from missions.models import *
 from missions.admin_jobs import email_mission
@@ -41,7 +41,7 @@ def mission(request, mission_id):
 
 
 def task(request, task_id):
-    if not request.user.is_staff:
+    if not request.user.is_staff and not settings.DEBUG:
         return redirect("index")
     task = Task.objects.get(id=task_id)
 
