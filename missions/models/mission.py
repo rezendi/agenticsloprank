@@ -288,9 +288,6 @@ class Mission(BaseModel):
     def get_repos(self):
         return self.get_pr_repos() or {"repo": self.get_repo()}
 
-    # Below is most of the "variants" code which allows different versions of a final report to be generated for different audiences.
-    # In general it could be handled more elegantly.
-
     def get_final_prompt(self):
         if not self.prompt and "prompt_template" in self.flags:
             filename = self.flags["prompt_template"]
@@ -299,7 +296,7 @@ class Mission(BaseModel):
             self.prompt = get_prompt_from_github(filename)
         if not self.prompt and self.mission_info:
             self.prompt = self.mission_info.base_prompt
-            if self.prompt and len(self.prompt) < 32:
+            if self.prompt and len(self.prompt) < 64 and not " " in self.prompt.strip():
                 self.prompt = get_prompt_from_github(self.prompt)
         self.save()
         return self.prompt or ""

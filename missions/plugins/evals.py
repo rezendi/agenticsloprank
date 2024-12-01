@@ -46,7 +46,7 @@ def run_eval(task):
             }
         return task
 
-    elif task.url == FACT_LIST_URL:
+    elif task.url == REPORT_FACT_LIST_URL:
         report_input = to_eval.response
         if to_eval.category == TaskCategory.FINALIZE_MISSION:
             input_tasks = task.mission.final_input_tasks()
@@ -65,8 +65,8 @@ def run_eval(task):
             report_input = "\n\n---\n".join(texts)
         else:
             report_input = to_eval.assemble_prerequisite_inputs()
-        task.prompt = get_prompt_from_github("eval-2")
-        data_frame = get_prompt_from_github("eval-2-data")
+        task.prompt = get_prompt_from_github("eval")
+        data_frame = get_prompt_from_github("eval-data")
         input = data_frame % (to_eval.response, report_input)
         task.response = chat_llm(task, input, tool_key="evaluate_report")
         return task

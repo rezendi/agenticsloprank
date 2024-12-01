@@ -182,19 +182,22 @@ class TaskInfo(BaseModel):
         )
 
         # fetch default prompt from GitHub if the task needs a prompt but has none
-        if task.is_prompted() or task.reporting != Reporting.NO_REPORT:
-            if not task.prompt:
-                try:
-                    url = task.url or (task.parent.url if task.parent else "")
-                    suffix = url.split("/")[-1]
-                    if task.category == TaskCategory.LLM_DECISION:
-                        task.prompt = get_prompt_from_github("assess-" + suffix)
-                    else:
-                        task.prompt = get_prompt_from_github(url)
-                except Exception as ex:
-                    task.add_error(ex, "prompt fetch")
+        # use the URL by defualt, if no URL, see if there's a prompt key
+        if task.is_prompted():
+            prompt = task.prompt
+            try:
+                if prompt and len(prompt) < 64 and not " " in prompt.strip():
+                    task.prompt = get_prompt_from_github(task.prompt)
                 if not task.prompt:
-                    task.add_error(None, "No prompt when prompt needed")
+                    url = task.url or (task.parent.url if task.parent else "")
+                    if task.url:
+                        suffix = url.split("/")[-1]
+                        if task.category == TaskCategory.LLM_DECISION:
+                            task.prompt = get_prompt_from_github("assess-" + suffix)
+                        else:
+                            task.prompt = get_prompt_from_github(url)
+            except Exception as ex:
+                task.add_error(f"Error fetching prompt", ex)
 
         task.save()
         return task

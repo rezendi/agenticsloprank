@@ -4,15 +4,12 @@ def get_openai_functions():
         get_pr_selector_tool(),
         get_issue_estimator_tool(),
         get_detective_report_tool(),
-        get_choose_datasets_tool(),
     ]
 
 
 def get_openai_functions_for(tool_key):
     if tool_key == "data_check":
         return [get_data_check_tool()]
-    if tool_key == "arxiv":
-        return [get_arxiv_categorizer_tool()]
     if tool_key == "files":
         return [get_file_selector_tool()]
     if tool_key == "pulls":
@@ -21,8 +18,6 @@ def get_openai_functions_for(tool_key):
         return [get_issue_estimator_tool()]
     if tool_key == "detective_report":
         return [get_detective_report_tool()]
-    if tool_key == "choose_datasets":
-        return [get_choose_datasets_tool()]
     if tool_key == "perform_rating":
         return [get_rating_tool()]
     if tool_key == "analyze_risks":
@@ -31,8 +26,6 @@ def get_openai_functions_for(tool_key):
         return [get_assess_risks_tool()]
     if tool_key == "identify_issue":
         return [get_identify_issue_tool()]
-    if tool_key == "taxonomize_projects":
-        return [get_taxonomize_projects_tool()]
     return get_openai_functions()
 
 
@@ -85,86 +78,6 @@ def get_data_check_tool():
         },
     }
     return data_check_tool
-
-
-def get_arxiv_categorizer_tool():
-    arxiv_categorizer_tool = {
-        "type": "function",
-        "function": {
-            "name": "list_arxiv_categories",
-            "description": "Fetch a list of ArXiv categories relevant to a project",
-            "strict": True,
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "categories": {
-                        "type": "array",
-                        "description": "A list of categories and the reasons they may be important",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "url": {
-                                    "type": "string",
-                                    "description": "The URL of the category",
-                                },
-                                "reason": {
-                                    "type": "string",
-                                    "description": "A brief explanation of why this category may be relevant",
-                                },
-                            },
-                            "required": ["url", "reason"],
-                            "additionalProperties": False,
-                        },
-                    }
-                },
-                "required": ["categories"],
-                "additionalProperties": False,
-            },
-        },
-    }
-    return arxiv_categorizer_tool
-
-
-def get_arxiv_paper_identifier():
-    arxiv_paper_identifier = {
-        "type": "function",
-        "function": {
-            "name": "list_arxiv_papers",
-            "description": "Fetch a list of ArXiv papers most relevant to a project",
-            "strict": True,
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "papers": {
-                        "type": "array",
-                        "description": "A list of ArXiv papers and the reasons they may be important",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the paper",
-                                },
-                                "url": {
-                                    "type": "string",
-                                    "description": "The URL of the paper",
-                                },
-                                "reason": {
-                                    "type": "string",
-                                    "description": "A brief explanation of why this paper may be relevant",
-                                },
-                            },
-                            "required": ["name", "url", "reason"],
-                            "additionalProperties": False,
-                        },
-                    }
-                },
-                "required": ["papers"],
-                "additionalProperties": False,
-            },
-        },
-    }
-    return arxiv_paper_identifier
 
 
 def get_file_selector_tool():
@@ -341,48 +254,6 @@ def get_detective_report_tool():
         },
     }
     return detective_report_tool
-
-
-def get_choose_datasets_tool():
-    choose_datasets_tool = {
-        "type": "function",
-        "function": {
-            "name": "choose_datasets",
-            "description": "Return a list of dataset IDs most germane to the question, and reasons why",
-            "strict": True,
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "datasets": {
-                        "type": "array",
-                        "description": "A list of datasets",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "id": {
-                                    "type": "number",
-                                    "description": "The ID of the dataset",
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the dataset",
-                                },
-                                "reason": {
-                                    "type": "string",
-                                    "description": "A brief explanation of why this dataset may be relevant",
-                                },
-                            },
-                            "required": ["id", "name", "reason"],
-                            "additionalProperties": False,
-                        },
-                    }
-                },
-                "required": ["datasets"],
-                "additionalProperties": False,
-            },
-        },
-    }
-    return choose_datasets_tool
 
 
 def get_rating_tool():
@@ -585,142 +456,3 @@ def get_identify_issue_tool():
         },
     }
     return identify_issue_tool
-
-
-def get_taxonomize_projects_tool():
-    taxonomize_projects_tool = {
-        "type": "function",
-        "function": {
-            "name": "taxonomize_projects",
-            "description": "Iteratively examine a collection of company datasets and infer / assemble a taxonomy of the company's ongoing projects",
-            "strict": True,
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "projects_rationale": {
-                        "type": "string",
-                        "description": "A brief explanation of how and why these new projects have been proposed for the taxonomy",
-                    },
-                    "projects": {
-                        "type": "array",
-                        "description": "A list of new projects to be incorporated into the taxonomy",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "rationale": {
-                                    "type": "string",
-                                    "description": "A thorough explanation of why this is a significant corporate project or initiative, citing specific data where available",
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the project or initiative",
-                                },
-                                "confidence": {
-                                    "type": "number",
-                                    "description": "An indicator of how confident you are that this is a significant project, from 1 to 10",
-                                },
-                            },
-                            "required": [
-                                "rationale",
-                                "confidence",
-                                "name",
-                            ],
-                            "additionalProperties": False,
-                        },
-                    },
-                    "dataset_rationale": {
-                        "type": "string",
-                        "description": "A brief explanation of why the next selected dataset may be important",
-                    },
-                    "next_id": {
-                        "type": "number",
-                        "description": "The ID of the next dataset to analyze. You should not analyze the same dataset twice.",
-                    },
-                },
-                "required": [
-                    "projects_rationale",
-                    "projects",
-                    "dataset_rationale",
-                    "next_id",
-                ],
-                "additionalProperties": False,
-            },
-        },
-    }
-    return taxonomize_projects_tool
-
-
-def get_merge_projects_tool():
-    merge_projects_tool = {
-        "type": "function",
-        "function": {
-            "name": "merge_projects",
-            "description": "Consider a hierarchical taxonomy of a company's projects and merge proposed new projects into that taxonomy",
-            "strict": True,
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "taxonomy_change_rationale": {
-                        "type": "string",
-                        "description": "A brief explanation of how and why the taxonomy has changed since the last version you received",
-                    },
-                    "taxonomy": {
-                        "type": "array",
-                        "description": "A list of the company's ongoing significant projects or initiatives",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "rationale": {
-                                    "type": "string",
-                                    "description": "A thorough explanation of why this is a significant corporate project or initiative, citing specific data where available",
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the project or initiative",
-                                },
-                                "confidence": {
-                                    "type": "number",
-                                    "description": "An indicator of how confident you are that this is a significant project, from 1 to 10",
-                                },
-                                "subprojects": {
-                                    "type": "array",
-                                    "description": "A list of the subprojects within this larger corporate project or initiatives",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "rationale": {
-                                                "type": "string",
-                                                "description": "A thorough explanation of why this is grouped as a subproject of the larger project",
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The name of the subproject",
-                                            },
-                                        },
-                                        "required": [
-                                            "rationale",
-                                            "name",
-                                        ],
-                                        "additionalProperties": False,
-                                    },
-                                },
-                            },
-                            "required": [
-                                "rationale",
-                                "confidence",
-                                "name",
-                                "subprojects",
-                            ],
-                            "additionalProperties": False,
-                        },
-                    },
-                },
-                "required": [
-                    "taxonomy",
-                    "taxonomy_change_rationale",
-                ],
-                "additionalProperties": False,
-            },
-        },
-    }
-    return merge_projects_tool

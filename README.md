@@ -26,7 +26,7 @@ YamLLMs is built atop [Django](https://www.djangoproject.com/) so it can easily 
     2. Use an LLM to generate an intelligently structured list of factual claims in that text.
     3. For each such claim, run a news search to see if it is supported by media you trust.
     4. Use an LLM to conver those search results into a report on the validity of the initial article.
-4. Describe your mission, tasks, and prompts in one compact YAML file, per our examples / documentation / code.
+4. Describe mission, tasks, and prompts in one compact YAML file, per our examples / documentation / code.
 5. Import that mission template into the database: e.g. `python manage.py import --file "fact_check.yaml"`
 6. Run a mission, via the web admin interface, a custom command, or the generic `run_mission` command.
 7. Incorporate that mission, and others, into fully automated processes to help solve ever larger problems.

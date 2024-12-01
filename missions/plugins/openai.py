@@ -263,8 +263,6 @@ Information to analyze and report on
             tool_choice = {"type": "function", "function": {"name": "data_check"}}
         case "detective_report":
             tool_choice = {"type": "function", "function": {"name": "detective_report"}}
-        case "choose_datasets":
-            tool_choice = {"type": "function", "function": {"name": "choose_datasets"}}
         case "perform_rating":
             tool_choice = {"type": "function", "function": {"name": "perform_rating"}}
         case "analyze_risks":
@@ -273,11 +271,6 @@ Information to analyze and report on
             tool_choice = {"type": "function", "function": {"name": "assess_risks"}}
         case "identify_issue":
             tool_choice = {"type": "function", "function": {"name": "identify_issue"}}
-        case "taxonomize_projects":
-            tool_choice = {
-                "type": "function",
-                "function": {"name": "taxonomize_projects"},
-            }
     if tool_choice:
         log("tool choice", tool_key, "llm", llm)
 

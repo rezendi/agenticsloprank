@@ -121,7 +121,7 @@ def answer_agent(task):
     data_task = Task.objects.get(id=data_task_id) if data_task_id else None
     data_to_analyze = data_task.response if data_task else None
 
-    base_prompt = task.flags.get("base_prompt", "detective-2")
+    base_prompt = task.flags.get("base_prompt", "detective")
     base_prompt = get_prompt_from_github(base_prompt)
     task.prompt = base_prompt % (
         today,

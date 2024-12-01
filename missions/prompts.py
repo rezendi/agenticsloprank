@@ -9,7 +9,7 @@ def get_prompt_from_github(key):
         log("Warning: no prompt key, returning empty prompt")
         return ""
     if key.lower().endswith("readme"):
-        key = "README_prompt"
+        key = "README-prompt"
     if key.startswith(LINEAR_API):
         key = "linear"
     if key.startswith(MONDAY_API):

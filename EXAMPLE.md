@@ -138,7 +138,7 @@ To run this locally, with YamLLMs set up, you need merely import that YAML so as
 
 and then use the `fact_check` command to fact-check any URL, e.g.
 
-`python manage.py run_mission --name="Fact Check" --url "https://site.com/blog-post-to-fact-check/"`
+`python manage.py fact_check --url "https://site.com/blog-post-to-fact-check/"`
 
 Note that we could also use our generic `run_mission` command:
 

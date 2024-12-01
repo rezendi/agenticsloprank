@@ -57,7 +57,7 @@ def ask_gemini(task, input_tasks=[]):
         if task.is_test():
             input_data = "Test prompt %s"
         else:
-            input_data += get_prompt_from_github("gemini_followup_preamble")
+            input_data += get_prompt_from_github("gemini-followup-preamble")
         report = task.parent.response if task.parent else "No report available."
         input_data = input_data % report
         input_data += "\n\n---\n\n"
@@ -73,7 +73,7 @@ def ask_gemini(task, input_tasks=[]):
         input_data += questions
 
     if not task.is_test():
-        input_data += get_prompt_from_github("gemini_preamble")
+        input_data += get_prompt_from_github("gemini-preamble")
     input_data += "\nConcatenated Datasets\n---------------------\n\n"
     texts = []
     for idx, t in enumerate(input_tasks):

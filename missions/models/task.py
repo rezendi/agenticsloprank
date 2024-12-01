@@ -102,10 +102,11 @@ class Task(BaseModel):
         return self.status == TaskStatus.COMPLETE
 
     def is_prompted(self):
-        return self.category in [
+        explicit = self.category in [
             TaskCategory.LLM_REPORT,
             TaskCategory.FINALIZE_MISSION,
         ]
+        return explicit or self.reporting != Reporting.NO_REPORT
 
     def is_final_or_post(self):
         return self.category in [
