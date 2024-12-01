@@ -33,7 +33,7 @@ class MissionInfo(BaseModel):
     )
     cadence = models.IntegerField(choices=Cadence.choices, default=Cadence.NONE)
     visibility = models.IntegerField(
-        choices=Visibility.choices, default=Visibility.PRIVATE
+        choices=Visibility.choices, default=Visibility.PUBLIC
     )
     # day of week (0-6) or day of month (1-31)
     run_at = models.IntegerField(null=True, blank=True)

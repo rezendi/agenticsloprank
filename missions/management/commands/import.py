@@ -99,6 +99,7 @@ class Command(BaseCommand):
                 task_info.parent = [t for t in task_infos if t.name == parent][0]
 
         for task_info in task_infos:
+            name = task_info.name
             if names.get(task_info.name) != task_info.name:
                 name = names[task_info.name]
             else:

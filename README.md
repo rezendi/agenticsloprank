@@ -95,8 +95,8 @@ Pull this repo down to your local machine
 
 and in its root directory, save a `.env` file with the following environment variables:
 
-- `OPENAI_API_KEY` (if you have one) or `NVIDIA_API_KEY` (available for free [here](https://build.nvidia.com/nvidia/llama-3_1-nemotron-70b-instruct))
-- `GITHUB_TOKEN` (a GitHub [Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens); these too are free)
+- `NVIDIA_API_KEY` (available for free [here](https://build.nvidia.com/nvidia/llama-3_1-nemotron-70b-instruct)) or `OPENAI_API_KEY` (if you have one)
+- `GITHUB_TOKEN` (a free GitHub [Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens))
 
 (GitHub kindly allows a tiny number of unauthorized API calls, so you can actually get things running without any of the above, but you will likely hit GitHub rate limits before you are rejected by the LLM API for the lack of a key.)
 
@@ -109,16 +109,16 @@ and in its root directory, save a `.env` file with the following environment var
 
 ### Running Locally: Docker Compose
 
-- Alternatively, just run `docker-compose build && docker-compose run --remove-orphans`
+- Alternatively, just run `docker-compose build && docker-compose run`
 
 ### Setup and Seed
 
+(If using Docker Compose, preface all commands with `docker-compose run worker`.)
 In the root directory, open a command-line window and install/configure the framework:
 
 - Run `python manage.py migrate` (sets up your local SQLite database)
 - Optionally run `pytest` (confirm the install is working; ignore the time-zone warnings)
 - Run `python manage.py seed` (populates your local database with initial data, including the Public Repo Report mission YAML; also creates a Django admin user with the credentials `admin`/`adyamllms`)
-- If using Docker Compose, preface all `python manage.py` commands with `docker-compose run worker`.
 
 ### Run A Sample Report
 
@@ -131,9 +131,10 @@ Your installation/configuration complete is now complete, and you can run a Publ
 
 Subsequently, to administer your missions and tasks:
 
-- If not using Docker Compose, run `python manage.py runserver` to launch the web server, and navigate to [http://localhost:8000/running](http://localhost:8000/running) to view the currently active or most recent mission.
+- If not using Docker Compose, run `python manage.py runserver` to launch the local web server
+- Navigate to [http://localhost:8000/running](http://localhost:8000/running) to view the currently active or most recent mission.
 - To administer YamLLMs, log in to [http://localhost:8000/admin](http://localhost:8000/admin) with `admin`/`adyamllms`.
-- To run missions and tasks from the web admin interface, if not using Docker Compose, you need a background worker process; open another command-line window and run `python manage.py rqworker`.
+- If not using Docker Compose, you need a background worker process to run missions and tasks from the web admin interface; open another command-line window and run `python manage.py rqworker`.
 
 ## Configuring Missions and LLM Tasks with YAML
 
@@ -245,11 +246,11 @@ As is hopefully apparent, adding (and redefining) task and LLM plugins is very, 
 
 Prompts may simply be written into the YAML that defines tasks and missions.
 
-A more sophisticated approach is to store prompts in a separate repository, defined in `settings.GITHUB_PROMPTS_REPO`. This allows for independent version control of prompts, the evolution of prompts over repeated iterations of mission and task templates, and the encapsulation of prompts as separate first-class concerns. One can, of course, use the YamLLMs repos as the prompts repo as well with minor tweaks, e.g. prepending a `prompts/` directory to every API prompt fetch request.
+A more sophisticated approach is to store prompts in a separate repository, defined in `settings.GITHUB_PROMPTS_REPO`. (Out of the box this is [thedispatch/yamllms-prompts](https://github.com/thedispatch/yamllms-prompts)) This encapsulation of prompts as separate first-class concerns allows for independent version control and evolution of prompts over repeated iterations of mission and task templates.
 
-Fetching from the prompts repo is performed by the `get_prompt_from_github` method in [prompts.py](./missions/jobs/prompts.py). This accepts a `key` parameter, which can be any string. There is some special-case handling for various APIs, but as a general fallback, if a URL is passed in, `.md` is appended to the last component of that URL, and that filename is fetched from the prompts repo.
+Fetching from the prompts repo is performed by the `get_prompt_from_github` method in [prompts.py](./missions/jobs/prompts.py). This accepts a `key` parameter, which can be any string. There is some special-case handling for various APIs, but as a general fallback, if a URL is passed in, `.md` is appended to the last component of that URL, and that filename is fetched from the prompts repo. The responses for prompt keys are by default cached for 60 minutes (1 minute in a debug/test environments.)
 
-The prompt text is fetched using the GitHub API. This calls for a `GITHUB_TOKEN`, although if the prompts are in a public repository, GitHub's limit of 60 unauthorized API requests per hour will likely suffice, especially as the responses for prompt keys are by default cached for 60 minutes (1 minute in a debug/test environments.)
+The prompt text is fetched using the GitHub API. This calls for a `GITHUB_TOKEN`, although if the prompts are in a public repository, GitHub's limit of 60 unauthorized API requests per hour will likely suffice. You could use the YamLLMs repos as the prompts repo as well, with minor tweaks to `get_prompt_from_github`.
 
 ## Administration
 
@@ -349,6 +350,6 @@ LLM providers supported out of the box:
 
 ## Credits / Contact / License
 
-The architecture, configuration, and Python code were initially written by [@rezendi](https://github.com/rezendi), and the front end was a collaboration between [@rezendi](https://github.com/rezendi) and [@chenware](https://github.com/chenware). They can be contacted at [jon@thedispatch.ai](mailto:jon@thedispatch.ai) and [robb@thedispatch.ai](mailto:robb@thedispatch.ai).
+The architecture, configuration, and Python code were initially written by [@rezendi](https://github.com/rezendi), with the front end a collaboration between [@rezendi](https://github.com/rezendi) and [@chenware](https://github.com/chenware). They can be contacted at [jon@thedispatch.ai](mailto:jon@thedispatch.ai) and [robb@thedispatch.ai](mailto:robb@thedispatch.ai).
 
 YamLLMs is [Apache licensed](./LICENSE.txt).
