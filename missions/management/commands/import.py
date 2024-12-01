@@ -86,7 +86,7 @@ class Command(BaseCommand):
 
             reporting = info.get("report", "no")
             if reporting == "yes":
-                task_info.reporting = Reporting.REPORT
+                task_info.reporting = Reporting.ALWAYS_REPORT
             if reporting == "key context" or reporting == "key_context":
                 task_info.reporting = Reporting.KEY_CONTEXT
 

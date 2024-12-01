@@ -133,7 +133,7 @@ Subsequently, to administer your missions and tasks:
 
 - If not using Docker Compose, run `python manage.py runserver` to launch the local web server
 - Navigate to [http://localhost:8000/running](http://localhost:8000/running) to view the currently active or most recent mission.
-- To administer YamLLMs, log in to [http://localhost:8000/admin](http://localhost:8000/admin) with `admin`/`adyamllms`.
+- To view task details from that page, or to administer YamLLMs in general, log in to [http://localhost:8000/admin](http://localhost:8000/admin) with `admin`/`adyamllms`.
 - If not using Docker Compose, you need a background worker process to run missions and tasks from the web admin interface; open another command-line window and run `python manage.py rqworker`.
 
 ## Configuring Missions and LLM Tasks with YAML

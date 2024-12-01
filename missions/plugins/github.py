@@ -98,7 +98,7 @@ def auth_github(task):
         return app_auth.get_installation_auth(installation_id)
     else:
         token = os.environ["GITHUB_TOKEN"]
-        log("Using environment token", token)
+        log("Using environment GitHub token, length", len(token))
         return github.Auth.Token(token)
 
 
