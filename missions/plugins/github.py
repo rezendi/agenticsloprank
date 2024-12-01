@@ -894,7 +894,6 @@ def get_gh_commits(task, repo):
     task.save()
 
     # getting the actual active branches is weirdly a pain, surely there's a better way?
-    # TODO some sort of "get commits since X, is sha in that list" thing here?
     branches = repo.get_branches()
     log("Rendering branch commits, total branches", branches.totalCount)
     r += "\n\n" + h3("Total branches: %s" % branches.totalCount)

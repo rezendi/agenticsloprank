@@ -299,7 +299,6 @@ def fetch_harvest_projects(task, harvest):
 
     cutoff = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=30)
     cutoff = cutoff.strftime("%Y-%m-%d")
-    # TODO be smarter about what to and not to include?
     projects = fetch(harvest, "projects?is_active=true")
     clients = {}
     for project in projects.projects:

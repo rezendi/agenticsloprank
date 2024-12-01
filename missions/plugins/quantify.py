@@ -409,7 +409,6 @@ def quantify_jira(task):
     ]
 
     # group by epics if epics, otherwise by sprints if sprints, otherwise just issues
-    # there's a bunch of repeated code here, TODO split into functions
     rows = []
     non_grouped = []
 
@@ -434,7 +433,6 @@ def quantify_jira(task):
                 vals["fix_versions"] = len(epic["fixVersions"])
                 vals["first_fix"] = epic["fixVersions"][0]
 
-            # TODO projected date
             rows.append(vals)
 
     # group by sprint, with a total line for un-sprinted issues

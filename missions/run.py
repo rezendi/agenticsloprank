@@ -169,7 +169,6 @@ def run_llm_decision(task):
 
     # for now, base fetch creation on the URL because that can include
     # both the source (e.g. github) and the target (e.g. pulls/files)
-    # possible TODO something more elegant
     if task.response and task.status == TaskStatus.COMPLETE:
         pm = get_plugin_manager()
         completion = pm.hook.run_llm_decision(task=task)

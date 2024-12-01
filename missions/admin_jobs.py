@@ -5,7 +5,6 @@ import django_rq
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from django.conf import settings
-from django.core import serializers
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from .util import *
@@ -78,71 +77,6 @@ def llm_evaluate_completion(mission):
     mission.extras["llm_says_completed"] = "true"
     mission.extras["llm_completeness_reason"] = response.get("reason", "n/a")
     return problems
-
-
-def save_objects(yamls):
-    # TODO serialize & look for matching mission_infos / task_infos
-    new_mission = None
-    new_mi = None
-    task_key_changes = {}
-    info_key_changes = {}
-    tasks = []
-    task_infos = []
-
-    for idx in range(len(yamls)):
-        obj = next(serializers.deserialize("yaml", yamls[idx]))
-        old_key = obj.object.pk
-        obj.object.pk = None
-        obj_type = obj.object.__class__.__name__
-
-        # mission/task set
-        if obj_type == "Mission":
-            mission = obj.object
-            mission.mission_info_id = None  # TODO: try to find by name
-            mission.previous_id = None  # TODO: find?
-            mission.save()
-            new_mission = mission
-        elif obj_type == "Task":
-            task = obj.object
-            task.task_info_id = None  # TODO: try to find by name
-            task.mission_id = new_mission.id  # relies on mission being the first object
-            parent_id = task.parent_id
-            task.parent_id = None
-            task.save()
-            task_key_changes[old_key] = task.pk
-            task.parent_id = parent_id
-            tasks.append(task)
-
-        # mission info / task info set
-        elif obj_type == "MissionInfo":
-            mission_info = obj.object
-            mission_info.customer_id = None  # TODO: try to find by name
-            mission_info.project_id = None  # TODO: try to find by name
-            mission_info.save()
-            new_mi = mission_info
-        elif obj_type == "TaskInfo":
-            task_info = obj.object
-            task_info.mission_info_id = new_mi.id  # relies on it being the first object
-            parent_id = task_info.parent_id
-            task_info.parent_id = None
-            task_info.save()
-            info_key_changes[old_key] = task_info.pk
-            task_info.parent_id = parent_id
-            task_infos.append(task_info)
-
-    for task in tasks:
-        if task.parent_id:
-            task.parent_id = task_key_changes[task.parent_id]
-        task.save()
-
-    for task_info in task_infos:
-        if task_info.parent_id:
-            task_info.parent_id = info_key_changes[task_info.parent_id]
-        task_info.save()
-
-    if new_mission:
-        return ("Mission", new_mission.id)
-    return ("MissionInfo", new_mi.id)
 
 
 def email_mission(mission_id, email, bcc_ops=False):

@@ -5,8 +5,7 @@ from django.template import loader
 import openai
 
 from missions.models import *
-from missions.hub import fulfil_mission
-from missions.admin_jobs import copy_mission, save_objects, email_mission
+from missions.admin_jobs import email_mission
 from missions.plugins.figma import get_figma_projects
 from missions.plugins.jira import get_jira_projects
 

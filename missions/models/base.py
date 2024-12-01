@@ -1,5 +1,4 @@
 import json
-from datetime import timedelta
 from django.db import models
 from django.core import serializers
 from django.contrib.auth.models import AbstractUser

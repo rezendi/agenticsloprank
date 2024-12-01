@@ -85,10 +85,12 @@ class Command(BaseCommand):
             task_infos.append(task_info)
 
             reporting = info.get("report", "no")
-            if reporting == "yes":
-                task_info.reporting = Reporting.ALWAYS_REPORT
             if reporting == "key context" or reporting == "key_context":
                 task_info.reporting = Reporting.KEY_CONTEXT
+            if not reporting or reporting == "no" or reporting == "never":
+                task_info.reporting = Reporting.NO_REPORT
+            else:
+                task_info.reporting = Reporting.ALWAYS_REPORT
 
         # assign parents
         for info in tasks_data:

@@ -684,7 +684,7 @@ class OtherTests(TestCase):
     def test_render_linear(self):
         task = self.get_task(HARVEST_API)
         get_linear_issues(task, self.get_mock_linear())
-        # TODO actually test this by mocking GraphQL, sigh
+        # TODO actually test this by mocking GraphQL
 
     # Harvest
 
@@ -753,4 +753,3 @@ class OtherTests(TestCase):
         fetch_harvest_projects(task, self.get_mock_harvest())
         self.assertTrue("#### Project: Test Project 2" in task.response)
         self.assertTrue("- Test Task 2" in task.response)
-        # TODO add hourly entries

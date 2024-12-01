@@ -331,8 +331,8 @@ def get_token_limit_for(llm):
     raise Exception("No token limit found for %s" % llm)
 
 
-# Used to not overload the function window with massive data
-# TODO consider splitting or summarizing rather than truncating excessive inputs
+# Used to not overload the contet window with massive data
+# TODO flags to handle excessive inputs in ways other than truncating
 def get_sized_prompt(task, prompt, truncate_to=None):
     llm = task.get_llm()
     tokens = token_count_for(prompt, llm)

@@ -221,7 +221,6 @@ class TaskInfo(BaseModel):
             flags=original.flags,
         )
         # strip out extraneous extras
-        # TODO move some of these to separate columns
         for key in [
             "errors",
             "evaluated",

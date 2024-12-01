@@ -409,7 +409,7 @@ def set_up_assistant(mission):
         mission_info.save()
         log("New mission assistant:", mission.get_assistant_id())
 
-    # create new threads for new missions, TODO: consider reruns
+    # create new threads for new missions
     if mission.task_set.count() == 0 or not mission.get_thread_id():
         thread = openai.beta.threads.create()
         log("Mission thread:", thread.id)

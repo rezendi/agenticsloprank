@@ -131,12 +131,10 @@ def accessible_mission(request, mission):
 
 
 def index(request):
-    log("Index request")
     template = loader.get_template("index.html")
     return HttpResponse(template.render())
 
 
-# TODO include public customer reports
 @conditional_ratelimit(key="ip", rate="60/h")
 def reports(request, page_length=40):
     mission_list = Mission.objects.filter(
