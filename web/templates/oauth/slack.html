@@ -1,0 +1,21 @@
+{% include "header.html" %}
+<body>
+  <main class="text-center">
+    <div>
+      <h2>The Dispatch</h2>
+    </div>
+    <h3>
+      {% if error %}
+        {{ error }}
+      {% else %}
+        {% if request.user.active_project_id %}
+          <br/><b><i>Active project:</i></b> {{request.user.active_project.name}}<hr/>
+        {% endif %}
+        To incorporate public Slack conversations into your Dispatch reports,
+        <a href="https://slack.com/oauth/v2/authorize?{{ slack_query }}"
+          >authorize our (read-only) Slack app</a
+        >
+      {% endif %}
+    </h3>
+  </main>
+</body>

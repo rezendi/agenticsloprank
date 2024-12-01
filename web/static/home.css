@@ -1,0 +1,296 @@
+* {
+	box-sizing: border-box;
+}
+body {
+  background-color: var(--light-grey-color);
+}
+
+h1 {
+  display: inline-block;
+  padding-left: 1rem;
+  text-align: left;
+  font-size: 1.25rem;
+}
+
+h2 {
+  font-weight: 400; 
+  text-align: center;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+h3 {
+  font-family: var(--sans-serif-fonts);
+}
+
+p {
+  line-height: 1.4;
+}
+
+li {
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.hero {
+  position: relative;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 62vh;
+  color: var(--very-light-grey-color);
+  background-image: url('/static/images/cover-birds.jpg');
+  background-position: center;
+  background-attachment: scroll;
+  background-size: cover;
+}
+
+.hero img {
+  width: 200px;
+  margin: auto;
+  z-index: 50;
+}
+
+.hero h2 { 
+  font-family: var(--serif-fonts);
+  font-weight: 400;
+  font-size: 2rem;
+  max-width: 42rem;
+}
+
+.works-with {
+  display: flex;
+  flex-direction: column;
+}
+
+.integration-logos {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.75rem;
+}
+
+.logo-container img {
+  margin-bottom: 0.25rem;
+}
+
+.img-container {
+  max-width: 100%;
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  flex: 1;
+}
+
+.value-prop-container {
+  position: relative;
+  z-index: 100;
+  display: grid;
+  max-width: 1200px;
+  margin: auto;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.value-prop {
+  padding: 1rem;
+  padding-bottom: 3rem;
+}
+
+.value-prop .svg-container {
+  position: relative;
+  height: 120px;
+  width: 120px;
+  margin: auto;
+}
+
+.value-prop h3, .value-prop p {
+  background-color: var(--light-grey-color);
+}
+
+.value-prop .svg-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: auto;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  max-width: 20rem;
+}
+.divider {
+  width: 1px;
+  background-color: #000;
+  margin: 0 20px;
+}
+
+.signup {
+  font-size: 1.2rem;
+  padding: 2rem 1rem;
+}
+
+.signup-container {
+  padding: 4rem 1rem;
+  background-color: var(--grey-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.signup-container > div {
+  width: 100%;
+  max-width: 32rem;
+}
+
+.signup-container p {
+  padding-bottom: 2rem;
+}
+
+.product img {
+  margin: 2rem auto;
+  border-radius: 2rem;
+  width: 80%;
+  max-width: 500px;
+}
+
+.product div.row-even {
+  flex-direction: column;
+}
+
+.about-us {
+  padding: 2rem 1rem;
+}
+
+.team {
+  display: grid;
+  max-width: 1200px;
+  margin: 4rem auto;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  font-size: 1.2rem;
+}
+
+.team-member {
+  padding-bottom: 3rem;
+}
+.team h3 {
+  margin-bottom: 0;
+}
+
+.team-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding-bottom: .75rem;
+}
+.team p {
+  margin: auto;
+  max-width: 24rem;
+}
+
+.team-photo {
+  border-radius: 100%;
+  border: 1px solid var(--darkest-grey-color);
+  padding: 0;
+}
+
+
+/* Responsive Behavior */
+
+@media (min-width: 1024px) {
+  h1 {
+    font-size: 2rem;
+  }
+  .hero {
+    grid-template-columns: 1fr 1fr 2fr 1fr;
+  }
+  .hero h2 { 
+    font-size: 4rem;
+  }
+  .product div.row-even, .integrations div.row {
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .signup {
+    padding: 2rem;
+  }
+  .signup-container {
+    grid-template-columns: 3fr 5fr;
+  }
+  .signup-container p {
+    padding-bottom: 0;
+  }
+
+}
+
+/* Animations */
+
+/* Animation for value prop assets */
+/* Keyframes for base layer animation */
+@keyframes rotateBase {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+/* Keyframes for overlay layer animation */
+@keyframes floatOverlay {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(5px, 5px);
+  }
+}
+
+/* Applying animations to each value-prop */
+.value-prop:nth-child(1) .base {
+  animation: rotateBase 6s infinite alternate ease-in-out;
+}
+
+.value-prop:nth-child(1) .overlay-top {
+  animation: floatOverlay 6s infinite alternate ease-in-out;
+}
+
+.value-prop:nth-child(2) .base {
+  /* Different animation or same as above with different timing */
+  animation: rotateBase 8s infinite alternate ease-in-out;
+}
+
+.value-prop:nth-child(2) .overlay {
+  /* Different animation or same as above with different timing */
+  animation: floatOverlay 8s infinite alternate ease-in-out;
+}
+
+.value-prop:nth-child(3) .base {
+  /* Different animation or same as above with different timing */
+  animation: rotateBase 10s infinite alternate ease-in-out;
+}
+
+.value-prop:nth-child(3) .overlay {
+  /* Different animation or same as above with different timing */
+  animation: floatOverlay 10s infinite alternate ease-in-out;
+}
+
+@media (min-width: 1024px) {
+  .signup-container {
+    flex-direction: row;
+    gap: 2rem;
+  }
+}

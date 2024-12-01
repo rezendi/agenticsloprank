@@ -1,0 +1,9 @@
+{% extends "admin/index.html" %}
+{% block sidebar %}
+{{ block.super }}
+Workers {{ workers }}
+<p/>
+Queue {{ queue_length }}
+<p/>
+Worker status {{ worker_states }}
+{% endblock %}

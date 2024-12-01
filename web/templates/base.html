@@ -1,0 +1,58 @@
+{% load static %}{% load env_extras %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}YamLLMs{% endblock %}</title>
+    {% block meta %}
+        <meta
+        name="description"
+        content="YamLLMs: AI reporting framework"
+    />
+        <!-- Standard favicon -->
+        <link rel="shortcut icon" href="{% static 'favicons/favicon.ico' %}" type="image/x-icon">
+        <meta property="og:image" content="https://yamllms.ai{% static 'favicons/favicon-128x128.jpg' %}" />
+
+
+        <link rel="stylesheet" href='{% static "base.css" %}' />
+        <link rel="stylesheet" href='{% static "other.css" %}' />
+        <link rel="stylesheet" href='{% static "loader.css" %}' />
+    {% endblock %}
+
+    {% block extend_head %}{% endblock %}
+    
+    <script>
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        posthog.init("{% get_env_var 'POSTHOG_API_KEY' %}",{api_host:'https://app.posthog.com'})
+        posthog.identify("{{request.user.id}}", { email: "{{request.user.email}}", name: "{{request.user.name}}" });
+    </script>
+    <script type="text/javascript">
+        function toggle(id) {
+        var e = document.getElementById(id);
+        e.style.display = e.style.display == 'block' ? 'none' : 'block';
+        }
+        function toClip(id) {
+        var e = document.getElementById(id);
+        navigator.clipboard.writeText(e.textContent);
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+        var closeButtons = document.querySelectorAll('.alert .close');
+        closeButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+            e.preventDefault();
+            var alert = this.closest('.alert');
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.style.display = 'none';
+            }, 300);
+            });
+        });
+        });
+    </script>
+  </head>
+    {% block content %}{% endblock %}
+    {% block base_scripts %}
+        {% block scripts %}{% endblock %}
+    {% endblock %}
+</html>

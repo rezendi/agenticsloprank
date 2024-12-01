@@ -1,0 +1,88 @@
+{% load markdown_extras %}
+{% include "header.html" %}
+{% load static %}
+<head>
+  <link rel="stylesheet" href="{% static 'dashboard.css' %}" />
+</head>
+<body class="container">
+  {% include "_dashboard-header.html" with mission=mission %}
+  <section class="main mild-border mt-6">
+    <h4>Followup Question for {{ mission.name }}</h4>
+    {% if task %}
+      <b>{{task.followup_prompt }}</b>
+      <p id="q_response">
+        {% if task.status == -1 or task.status == -2 %} Task failed, sorry:
+          {{ task.extras.errors }}
+        {% elif task.status == 0 or task.status == 1 %}
+          Loading
+        {% else %}
+          {{task.response | markdown | safe}}
+        {% endif %}
+      </p>
+      {% endif %}
+      <form method="post" action="/ask_followup/" class="follow-up">
+        {% csrf_token %}
+        <input type="hidden" name="mission_id" value="{{mission.id}}" />
+        <textarea name="question"></textarea>
+        <input class="submit-button" type="submit" value="Ask" />
+      </form>
+
+      <hr />
+      <h3><a href="/reports/{{mission.id}}">Return to Full Report</a></h3>
+
+      {% if mission.followup_tasks %}
+      <hr />
+      <h4>All Followup Questions</h4>
+      <dl>
+        {% for t in mission.followup_tasks %}
+        <dt><b>{{t.followup_prompt }}</b></dt>
+        <dd>
+          {% if t.get_status_display == "In Process" %}
+            In Process
+          {% else %}
+            {% if t.response %} {{t.response | markdown | safe}} {% endif %}
+            {% if t.extras.errors %} <p>{{t.extras.errors}}</p> {% endif %}
+          {% endif %}
+        </dd>
+        <br />
+        {% endfor %}
+      </dl>
+    {% endif %}
+  </section>
+</body>
+<script language="javascript">
+  let intervalID = null;
+  let initialStatus = {% if task %} {{ task.status }} {% else %} -1 {% endif %};
+  let urlParams = new URLSearchParams(window.location.search);
+  let taskId = urlParams.get('task_id');
+  document.addEventListener("DOMContentLoaded", onLoad, false);
+
+  async function refreshTasks() {
+    let response = await fetch("/mission_tasks/{{mission.id}}.json");
+    tasks = await response.json();
+    // console.log("tasks", tasks);
+    if (tasks.length == 0) {
+      clearInterval(intervalID);
+      return;
+    };
+
+    for (let task of tasks) {
+      if (task.id == taskId) {
+        if (task.status == 2 && task.status != initialStatus) {
+          clearInterval(intervalID);
+          window.location.reload();
+        } else {
+          let dd = document.getElementById("q_response");
+          dd.innerHTML += ".";
+        }
+      }
+    }
+  }
+
+  function onLoad() {
+    if ({{ task.status }} != 2) {
+      setTimeout(refreshTasks, 500);
+      intervalID = setInterval(refreshTasks, 2000);
+    }
+  }
+</script>

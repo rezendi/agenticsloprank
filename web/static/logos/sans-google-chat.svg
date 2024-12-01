@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 28.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="chat_x5F_logo_x5F_192px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" width="192px" height="192px" viewBox="0 0 192 192" enable-background="new 0 0 192 192" xml:space="preserve">
+<rect id="bounding_box_1_" fill="none" width="192" height="192"/>
+<g id="art_layer">
+	<polygon fill="#EA4335" points="184,49 164.17,52.86 143,49 138.4,27.26 143,8 	"/>
+	<g>
+		<path fill="#34A853" d="M143,49v63H70l-21,21l-2.72,9.81L49,153v24.37c0,5.9,7.13,8.85,11.3,4.68L89.35,153H172
+			c6.63,0,12-5.37,12-12V49H143z"/>
+	</g>
+	<polygon fill="#4285F4" points="49,112 27,114.88 8,112 8,49 28.49,45.71 49,49 	"/>
+	<path fill="#1967D2" d="M49,49H8V20c0-6.63,5.37-12,12-12h29l3.77,19.42L49,49z"/>
+	<path fill="#188038" d="M49,112v41H20c-6.63,0-12-5.37-12-12v-29H49z"/>
+	
+		<rect x="75.5" y="-18.5" transform="matrix(-1.836970e-16 1 -1 -1.836970e-16 124.5 -67.5)" fill="#FBBC04" width="41" height="94"/>
+</g>
+</svg>

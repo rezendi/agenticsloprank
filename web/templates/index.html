@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}YamLLMs - AI reporting framework{% endblock %}
+
+{% block meta %}
+  {{ block.super }}
+    <meta property="og:title" content="YamLLMs" />
+    <meta property="og:description" content="A YAML-defined framework for LLM applications." />
+    <meta property="og:url" content="https://yamllms.ai" />
+    <meta property="og:type" content="website" />
+{% endblock %}
+
+{% block extend_head %}
+  <link rel="stylesheet" href='{% static "home.css" %}' />
+  <link rel="canonical" href="https://yamllms.ai" />
+{% endblock %}
+
+{% block content %}
+<body>
+  <main class="text-center">
+    <section class="hero">
+      <h2 class="mb-1">YamLLMs</h2>
+      <h3 class="mb-1">A YAML-defined framework for LLM applications</h3>
+    </section>
+    <section class="works-with mt-4 mb-2">
+      <label><strong>Works with</strong></label>
+      <div class="integration-logos ml-3 mt-1">
+        <div class="logo-container">
+            <img src="{% static 'logos/sans-github.svg' %}" alt="GitHub Logo" />
+            <span>GitHub</span>
+        </div>
+        <div class="logo-container">
+            <img src="{% static 'logos/sans-jira.svg' %}" alt="Jira Logo" />
+            <span>Jira</span>
+        </div>
+        <div class="logo-container">
+            <img src="{% static 'logos/sans-confluence.svg' %}" alt="Confluence Logo" />
+            <span>Confluence</span>
+        </div>
+        <div class="logo-container">
+            <img src="{% static 'logos/sans-linear.svg' %}" alt="Linear Logo" />
+            <span>Linear</span>
+        </div>
+        <div class="logo-container">
+            <img src="{% static 'logos/sans-notion.svg' %}" alt="Notion Logo" />
+            <span>Notion</span>
+        </div>
+        <div class="logo-container">
+            <img src="{% static 'logos/sans-figma.svg' %}" alt="Figma Logo" />
+            <span>Figma</span>
+        </div>
+        <div class="logo-container">
+            <img src="{% static 'logos/sans-slack.svg' %}" alt="Slack Logo" />
+            <span>Slack</span>
+        </div>
+        <div class="logo-container">
+            <img src="{% static 'logos/sans-sentry.svg' %}" alt="Sentry Logo" />
+            <span>Sentry</span>
+        </div>
+      </div>
+    </section>
+    <section id="about-us" class="about-us">
+      <h2 class="">About Us</h2>
+      <p class="m-auto">We're a dedicated team with deep experience providing technical solutions and consulting to startups through Fortune 150s.</p>
+      <div class="team">
+        <div class="team-member">
+          <img alt="Jon Evans" class="team-photo" src="{% static 'jon-headshot.jpg'%}"/>
+          <h3>Jon Evans</h3>
+          <p class="team-title">CEO, Co-Founder</p>
+          <p class="text-left">Jon is an experienced technologist, widely published author, and former CTO of software consultancy HappyFunCorp. 
+        </div>
+        <div class="team-member">
+          <img alt="Robb Chen-Ware" class="team-photo" src="{% static 'robb-headshot.jpg'%}"/>
+          <h3>Robb Chen-Ware</h3>
+          <p class="team-title">COO, Co-Founder</p>
+          <p class="text-left">Robb is a product leader with over 12 years of experience and former COO of software consultancy HappyFunCorp.
+        </div>
+    </section>
+    
+  </main>
+  <footer>YamLLMs</footer>
+</body>
+{% endblock %}

@@ -1,0 +1,293 @@
+/* Styles only applicable to reports on the web */
+
+html, body {
+    max-width: 100%;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 400;
+}
+
+body {
+    background-color: white;
+}
+
+.mission {
+    font-size: 2rem;
+    margin: 0;
+  }
+
+.title-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.title-wrapper h1 {
+    font-weight: 400;
+    margin: 0;
+    font-size: 1.6rem;
+}
+.report-branding {
+    color: var(--dark-grey-color);
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+.report-branding a, .report-branding a:visited {
+    color: var(--dark-grey-color);
+}
+.report-branding > p {
+    line-height: 120%;
+    font-size: 0.75rem;
+}
+
+.table-container {
+    overflow-x: auto; /* Enables horizontal scrolling */
+    width: 100%; /* Ensures the container spans the full width of its parent */
+    -webkit-overflow-scrolling: touch; /* Improves scrolling on iOS devices */
+}
+
+table {
+    width: auto;
+    min-width: 100%;
+    table-layout: auto; /* Ensures the table adjusts to content */
+    border-collapse: collapse; /* Collapses table borders */
+}
+
+tr {
+    height: 4rem;
+}
+
+td{
+    margin: 0.4rem;
+}
+
+td img, .pr-table img {
+    width: 42px;
+    height: 42px;
+    border-radius: 100%;
+}
+
+th:first-child, td:first-child {
+    white-space: normal; /* Prevents content from wrapping */
+    word-wrap: break-word;
+    width: 1px; /* Shrinks the column to fit the content */
+    min-width: 12rem;
+    max-width: 20rem;
+    text-align: left;
+}
+
+/* zebra stripes for tables */
+tr:nth-child(even) {
+  background-color: var(--light-blue-color);
+}
+
+/* center data */
+td:not(:first-child){
+    text-align: center;
+}
+
+/* Annoyingly, simple-datatables doesn't vetically align by default */
+.table-container  th, .table-container td {
+    vertical-align: middle !important; /* Ensure vertical alignment */
+}
+
+
+pre {
+    max-width: 100%; /* Sets the maximum width to prevent it from exceeding its container */
+    overflow-x: auto; /* Enables horizontal scrolling if the content is wider than the container */
+    white-space: pre-wrap; /* Ensures that the text respects the container boundaries */
+    word-wrap: break-word; /* Allows long words to be broken and wrapped to the next line */
+
+    background: #444;
+    border: 1px solid var(--darkest-grey-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+
+pre code.language-diff {
+    background-color: transparent;
+    font-size: 0.8rem;
+}
+
+pre code.language-diff span {
+    display: block;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    border: none;
+}
+
+.pr-table {
+    border: 1px solid var(--grey-color);
+    border-radius: 0.5rem;
+}
+
+.pr-row {
+    padding: 1rem;
+}
+
+
+.pr-row details#text {
+    padding: 1rem;
+}
+
+.pr-row:not(:last-child) {
+    border-bottom: 1px solid var(--grey-color);
+}
+
+.pr-rating-header {
+    font-size: 1.2rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+}
+
+.pr-rating-header :nth-child(2) {
+    margin-left: auto;
+}
+
+.pr-created {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.pr-rating {
+    font-weight: 700;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+.pr-rating strong {
+    font-size: 1.25rem;
+}
+.pr-rating sub {
+    font-size: 0.75rem;
+}
+
+.pr-rating-state {
+    padding: 0.5rem 0.75rem;
+    border-radius: 2rem;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    background-color: var(--light-grey-color);
+}
+
+.pr-rating[data-rating="5"],
+.pr-rating[data-rating="4"] {
+    background-color: var(--bright-green-color);
+}
+
+.pr-rating[data-rating="3"] {
+    background-color: #FFD700;
+}
+
+.pr-rating[data-rating="2"],
+.pr-rating[data-rating="1"] {
+    background-color: var(--dark-red-color);
+    color: #FFFFFF; /* White text for contrast */
+}
+
+.pr-rating-rationale {
+    max-height: 4rem;
+    overflow: hidden;
+    mask-image: linear-gradient(to top, transparent, black 25%);
+    mask-size: 100% 400%;
+    mask-position: bottom;
+    transition: max-height 0.3s ease-out;
+}
+
+.pr-rating-rationale::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(to top, white, transparent 25%);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+}
+
+.pr-rating-rationale.expanded {
+    mask-image: none;
+}
+
+.pr-rating-rationale.expanded::after {
+    opacity: 0;
+}
+
+.read-more {
+    padding-top: 0.25rem;
+    cursor: pointer;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.pr-rating-rationale.expanded + .read-more {
+    opacity: 0.7;
+}
+
+.language-diff .unchanged { background-color: var(--grey-color); color: #222; } /* For diff metadata and info */
+.language-diff .added { background-color: #ddffdd; color: #003300; } /* For added lines */
+.language-diff .removed { background-color: #ffdddd; color: #660000; } /* For removed lines */
+
+/* Table higlight colors for Harvest-forecast diff values */
+.diff-positive { background-color: var(--light-green-color) !important; }
+.diff-negative { background-color: var(--light-orange-color) !important; }
+.diff-neutral { background-color: var(--light-blue-color) !important; }
+
+.sources {
+    font-size: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sources a, .sources img {
+    height: 1.5rem;
+}
+
+.full-product-cta {
+    background-color: var(--light-grey-color);
+    border: 1px solid var(--bright-orange-color);
+    border-radius: 0.5rem;
+    padding: 0 1rem;
+    box-shadow: 4px 4px 0 var(--darkest-grey-color);
+}
+
+.full-product-cta p {
+    line-height: 1.4;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+
+@media (min-width: 1024px) {
+    .report-branding {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .subscribe {
+        justify-content: space-between;
+    }
+    .subscribe form{
+        flex-direction: row;
+        gap: 1rem;
+    }
+    .subscribe .primary-pill-button {
+        margin-top: 0;
+    }
+}

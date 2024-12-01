@@ -1,0 +1,42 @@
+{% include "header.html" %}
+
+<body class="text-center dark-bg">
+  <main>
+    <header class="sticky">
+      <a class="ml-3 serif" href="/">
+        <h1>YamLLMS</h1>
+      </a>
+      <nav>
+      </nav>
+    </header>
+    <div class="mt-5 demo-form mild-border m-auto">
+      <div class="form-content">
+        <h1>Log into YamLLMS</h2>
+        {% if sent %}
+          <div class="sent-message">
+            <p><strong>✉️ We've sent you a magic link to sign in!</strong></p>
+            <p class="mb-2">(Don't forget to check your spam folder.)</p>
+            <a href="{% url 'login' %}">Re-try login</a>
+          </div>
+        {% else %}
+          <form action="{{ request.path }}" method="POST" class="mb-2">
+            {% csrf_token %}
+            <div class="input-field-wrapper">
+              <label for="email">Enter your email below to receive a magic link &#129668;</label>
+              <input type="email" class="input-field w-100 mb-2" name="email" placeholder="hello@yamllms.ai" />
+              <input class="submit-button" type="submit" value="Send login link">
+            </div>
+          </form>
+        {% endif %}
+        {% if error %}
+          <div class="error-message">Error: {{ error }}</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="gradients">
+      <div class="gradient-1"></div>
+      <div class="gradient-2"></div>
+      <div class="gradient-3"></div>
+    </div>
+  </main>
+</body>

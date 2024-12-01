@@ -1,0 +1,97 @@
+{% load markdown_extras %}
+{% load static %}
+{% include "header.html" %}
+<body class="container">
+  <div class="header">
+    {% if user.is_staff %}
+    <div>
+      <a class="pl-3 button-primary" href="/admin/missions/mission/{{mission.id}}"
+        >Edit</a
+      >
+      |
+      <a href="/staff/duplicate/{{mission.id}}">Duplicate</a>
+      |
+      <a href="/staff/mission_info/{{mission.mission_info_id}}">Template</a>
+      |
+      <a href="/running/{{mission.id}}">Run</a>
+      |
+      <a href="/reports/{{mission.id}}">Report</a>
+    </div>
+    {% endif %}
+    <label class="text-lg text-center">
+      <a href="/staff">The Dispatch</a>
+    </label>
+  </div>
+  <div class="left-bar"></div>
+  <div class="main mt-6">
+    <label class="mission"><a href="/reports/{{mission.id}}"></a>{{ mission.name }}</a></label>
+    <p>
+      <a href="/admin/missions/mission/{{ mission.id }}/">{{ mission.get_status_display}}</a>
+      | created {{mission.created_at}} edited {{mission.edited_at}} UTC
+    </p>
+    <div class="mt-4" id="mission-report">
+      <article>
+        <pre style="white-space: pre-wrap">{{ mission.response }}</pre>
+      </article>
+    </div>
+
+    <hr />
+    <h3><i>Aspect reports</i></h3>
+    <article>
+      {% for report in mission.sub_reports %}
+        <hr/>
+        <pre style="white-space: pre-wrap">{{ report.response }}</pre>
+      {% endfor %}
+    </article>
+
+    <hr />
+    <h3><i>Prompt</i></h3>
+    <article>
+      <pre style="white-space: pre-wrap">{{ mission.prompt }}</pre>
+    </article>
+
+    <hr />
+    <h3><i>Extras</i></h3>
+    <pre style="white-space: pre-wrap">{{ mission.pretty_extras }}</pre>
+
+    <div>
+      <h3>Tasks <span>&uarr;</span></h3>
+      <section>
+        <ol>
+          {% for task in mission.task_set.all %}
+          <li>
+            <p>
+              <a href="/staff/task/{{task.id}}">{{task.name}}</a>
+              ({{task.get_status_display}})
+            </p>
+            <p><i>URL</i> {{task.url}}</p>
+            <p><i>Prompt</i> {{task.prompt}}</p>
+          </li>
+          {% endfor %}
+        </ol>
+        <hr />
+      </section>
+
+    </div>
+    <div>
+      <hr />
+      <br/><i>ID</i> {{mission.id}}
+      <br/><i>Status</i> {{mission.get_status_display}}
+      <br/><i>Visibility</i> {{mission.get_visibility_display}}
+      <br/><i>Previous</i> {{mission.previous}}
+      <br/><i>Depends on</i> {{mission.depends_on}}
+      <br/><i>LLM</i> {{mission.get_llm}}
+      <br/><i>Flags</i> {{mission.flags}}
+      <br/><i>Final input tasks</i> {{mission.final_input_tasks}}
+
+    </div>
+    <div>
+      <a href="javascript:toggle('yaml')">Show/hide YAML</a>
+      <a href="javascript:toClip('yaml')">Copy YAML to clipboard</a><br/>
+      <div id="yaml" style="display:none;">
+        <pre style="white-space: pre-wrap">{{ mission.to_yaml }}</pre>
+      </div>  
+    </div>
+
+  </div>
+</body>

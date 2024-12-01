@@ -1,0 +1,236 @@
+{% load markdown_extras %}
+{% load static %}
+{% include "header.html" with title=mission.name %}
+
+<body class="container">
+  <div class="header">
+    <div>
+      {% if user.is_staff %}
+      <a
+        class="pl-3 button-primary unstyled"
+        href="/staff/mission/{{mission.id}}"
+        >View Mission</a
+      >
+      <a
+        class="pl-3 button-primary unstyled"
+        href="/admin/missions/mission/{{mission.id}}"
+        >Edit Mission</a
+      >
+      {% endif %}
+      <a class="pl-3 button-primary unstyled" href="/reports/{{mission.id}}"
+        >View Report</a
+      >
+    </div>
+    <label class="text-lg text-center">
+      <a class="unstyled serif" href="/staff">YamLLMs</a>
+    </label>
+  </div>
+  <div class="main mild-border mt-6">
+    <h3 class="text-left">{{ mission.name_with_link | safe}}</h3>
+    {% if not request.user.is_staff %}
+    <div>
+      Stay on this page to "watch" the report being generated;
+      or, go about your life and it will be emailed to you when it's done
+      (5-10 minutes depending on how much data needs to be crunched.)
+    </div>
+    {% endif %}
+    <div>
+      <h3 class="text-left">Tasks</h3>
+      <section id="task-body"></section>
+    </div>
+    <label>{{ mission.created_at }}</label>
+
+    <div><pre id="task-report" style="white-space: pre-wrap"></pre></div>
+    <div class="mt-4" id="mission-report">
+      <article>{{ mission.mission_report | markdown | safe }}</article>
+    </div>
+    <hr />
+    {% if mission.extras.email_to %}
+      <div>
+        This report will be emailed to
+          {% for email in mission.extras.email_to %}
+          {{ email }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+  </div>
+</body>
+<script language="javascript">
+  document.addEventListener("DOMContentLoaded", onLoad, false);
+
+  function addTaskDiv(parentDiv, id, name, status) {
+    let taskDiv = document.createElement("div");
+    let taskid = "task-" + id;
+    taskDiv.innerHTML =
+      "<a style='text-decoration:none;' href='/staff/task/" +
+      id +
+      "'>" +
+      name +
+      "</a>";
+    switch (status) {
+      case -2:
+        taskDiv.setAttribute("class", `${taskid} task-element task-empty`);
+        break;
+      case -1:
+        taskDiv.setAttribute("class", `${taskid} task-element task-failed`);
+        break;
+      case 0:
+        taskDiv.setAttribute("class", `${taskid} task-element task-processing`);
+        break;
+      case 1:
+        taskDiv.setAttribute("class", `${taskid} task-element task-processing`);
+        let loaderDiv = document.createElement("div");
+        loaderDiv.setAttribute("class", "loader");
+        taskDiv.appendChild(loaderDiv);
+        break;
+      case 2:
+        taskDiv.setAttribute("class", `${taskid} task-element task-complete`);
+    }
+    parentDiv.appendChild(taskDiv);
+    return taskDiv;
+  }
+
+  function addTask(div, task, force=false) {
+    if (task.category == 30 && task.parent_id && !force) {
+      return;
+    }
+    return addTaskDiv(div, task.id, task.name, task.status);
+  }
+
+  function addArrowDiv(parentDiv, link_id=null) {
+    let arrowDiv = document.createElement("div");
+    arrowDiv.setAttribute("class", "arrow");
+    if (link_id) {
+      arrowDiv.innerHTML = "<a style='text-decoration:none;' href='/staff/task/" + link_id + "'>→</a>";
+    } else {
+      arrowDiv.innerHTML = "→";
+    }
+    parentDiv.appendChild(arrowDiv);
+  }
+
+  let tasks = [];
+  let intervalID = null;
+  let missionLoaderDiv = null;
+  let initialMissionStatus = null;
+  let taskReport = document.getElementById("task-report");
+
+  async function fetchMissionReport() {
+    let response = await fetch("/missions/{{mission.id}}.json");
+    let json = await response.json();
+    let mission = json[0];
+    // console.log("mission", mission);
+    if (initialMissionStatus == null) {
+      initialMissionStatus = mission.fields.status;
+    }
+    if (mission.fields.status == 2) {
+      if (mission.fields.status != initialMissionStatus) {
+        window.location.href = "/reports/" + mission.pk;
+      }
+    } else if (mission.fields.status == -2) {
+      console.log("Mission failed");
+    } else if (!missionLoaderDiv) {
+      missionLoaderDiv = document.createElement("div");
+      missionLoaderDiv.setAttribute("style", "margin-left:48%");
+      missionLoaderDiv.setAttribute("class", "loader");
+      document.getElementById("task-body").appendChild(missionLoaderDiv);
+    }
+    taskReport.innerHTML = mission.fields.response;
+    if ([0, 1].includes(mission.fields.status)) {
+      setTimeout(fetchMissionReport, 2000);
+    }
+  }
+
+  async function refreshTasks() {
+    let response = await fetch("/mission_tasks/{{mission.id}}.json");
+    tasks = await response.json();
+    // console.log("tasks", tasks);
+    if (tasks.length == 0) return;
+
+    let taskbody = document.getElementById("task-body");
+    taskbody.textContent = "";
+    for (let task of tasks) {
+      renderTask(taskbody, task);
+    }
+
+    let in_process = tasks.filter((t) => [0, 1].includes(t.status));
+    if (in_process.length == 0) {
+      clearInterval(intervalID);
+      fetchMissionReport();
+    } else {
+      if ((in_process[0].response || "").trim().length > 0) {
+        taskReport.innerHTML = in_process[0].response;
+      }
+    }
+  }
+
+  function renderTask(taskbody, task) {
+    if (task.category >= 100) {
+      return addTask(taskbody, task);
+    }
+    if (task.category == 30) {
+      // if this agent chain has ended in a report, do nothing, addTaskSequence will handle it
+      finalChild = task;
+      descendants = tasks.filter((t) => t.parent_id == task.id);
+      while (descendants.length > 0) {
+        finalChild = descendants[0];
+        descendants = tasks.filter((t) => t.parent_id == descendants[0].id);
+      }
+      existing = document.querySelectorAll(".task-" + finalChild.id);
+      if (existing.length == 0 && finalChild.category == 30) {
+        addTaskSequence(taskbody, finalChild);
+      }
+      return;
+    }
+    existing = document.querySelectorAll(".task-" + task.parent_id);
+    if (existing.length > 0) {
+      for (let div of existing) {
+        nextDiv = div.nextElementSibling;
+        existingArrow = nextDiv && nextDiv.classList.contains("arrow");
+        if (!existingArrow) {
+          let seqDiv = div.parentElement;
+          addArrowDiv(seqDiv);
+          return addTask(seqDiv, task);
+        }
+      }
+    }
+    addTaskSequence(taskbody, task);
+  }
+
+  function addTaskSequence(taskbody, task) {
+    let chain = [task.id];
+    let parent_id = task.parent_id;
+    while (parent_id) {
+      let parent = tasks.find((t) => t.id == parent_id);
+      if (!parent) {
+        console.log("Parent not found", parent_id);
+        break;
+      }
+      if (chain.includes(parent.id)) {
+        console.log("Circular dependency!!!", parent.id);
+        break;
+      }
+      chain.unshift(parent.id);
+      if (parent.category >= 100) break; // final and post-final tasks are always root tasks
+      parent_id = parent.parent_id;
+    }
+
+    let seqDiv = document.createElement("div");
+    seqDiv.setAttribute("class", "task-sequence");
+    for (let id of chain) {
+      let ptask = tasks.find((t) => t.id == id);
+      if (ptask.category != 30 || ptask == task || !ptask.parent_id) {
+        addTask(seqDiv, ptask, true);
+      }
+      if (id != chain[chain.length - 1]) {
+        addArrowDiv(seqDiv, ptask.category == 30 ? id : null);
+      }
+    }
+    taskbody.appendChild(seqDiv);
+  }
+
+  function onLoad() {
+    setTimeout(refreshTasks, 500);
+    intervalID = setInterval(refreshTasks, 2000);
+  }
+</script>

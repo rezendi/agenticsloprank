@@ -1,0 +1,63 @@
+.task-sequence,
+.mission-sequence {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+}
+
+.task-element,
+.mission-element {
+  border-radius: 0.5rem;
+  margin: 0.2rem;
+  padding: 1rem;
+}
+
+.task-element a { 
+  color: var(--darkest-grey-color);
+  font-size: 0.8rem;
+  font-family: sans-serif;
+  line-height: 1.2;
+  text-align: center;
+  display: block;
+}
+
+
+.task-complete,
+.mission-complete {
+  border: 2px solid var(--bright-green-color);
+}
+
+.task-processing,
+.mission-processing {
+  border: 2px dashed var(--indigo-color);
+}
+
+.task-failed,
+.mission-failed {
+  border: 2px dotted var(--bright-orange-color);
+}
+
+.task-empty {
+  border: 2px solid var(--darkest-grey-color);
+
+}
+.loader {
+  border: 12px solid var(--bright-blue-color);
+  border-top: 12px solid var(--indigo-color);
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+        100% {
+          transform: rotate(360deg);
+        }
+      }

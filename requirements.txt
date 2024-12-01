@@ -1,0 +1,38 @@
+aiohttp==3.10.2
+anthropic==0.21.3
+atlassian-python-api==3.41.10
+azure-devops==7.1.0b4
+beautifulsoup4==4.12.2
+chardet==4.0.0
+dj_database_url==2.1.0
+Django==4.2.15
+django-cors-headers==4.4.0
+django-encrypted-model-fields==0.6.5
+django-permissions-policy==4.20.0
+django-ratelimit==4.1.0
+django-rq==2.8.1
+django-sesame==3.2.2
+FigmaPy==2018.1.0
+google-generativeai==0.4.1
+gunicorn==22.0.0
+gql==3.4.1
+Markdown==3.4.3
+markdownify==0.12.1
+mistralai==0.0.9
+notion-client==2.2.1
+slack_sdk==3.26.2
+openai==1.16.2
+pluggy==1.5.0
+PyGithub==2.3.0
+python-dotenv==1.0.0
+pyyaml==6.0.1
+redis==5.0.0
+Requests==2.32.2
+rq==1.15.1
+sentry-sdk==2.8.0
+stripe==10.4.0
+tiktoken==0.5.2
+# Heroku static files packages
+psycopg; sys_platform == "linux"
+psycopg[binary]; sys_platform != "linux"
+whitenoise[brotli]>=6.0,<7.0

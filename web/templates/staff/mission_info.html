@@ -1,0 +1,55 @@
+{% load markdown_extras %}
+{% load static %}
+{% include "header.html" %}
+<body class="container">
+  <div class="header">
+    <div>
+        <a class="pl-3 button-primary" href="/admin/missions/missioninfo/{{mission_info.id}}"
+          >Edit</a
+        >
+    </div>
+    <div><a href="/staff">The Dispatch - Staff - Mission Template View</a></div>
+  </div>
+  <div class="main">
+    <h3>Template Name: {{mission_info.name}}</h3>
+    <br/><i>Visibility</i> {{mission_info.get_visibility_display}}
+    <br/><i>Cadence</i> {{mission_info.get_cadence_display}}
+    <br/><i>Run at</i> {{mission_info.run_at}}
+    <br/><i>Customer</i> {{mission_info.customer}}
+    <br/><i>Project</i> {{mission_info.project}}
+    <br/><i>Previous</i> {{mission_info.previous}}
+    <br/><i>Depends on</i> {{mission_info.depends_on}}
+    <br/><i>Base LLM</i> {{mission_info.base_llm}}
+    <br/><i>Flags</i> {{mission_info.flags}}
+    <br/><i>Extras</i> {{mission_info.extras}}
+    <br/><i>Base prompt</i> {{mission_info.base_prompt}}
+    <br/><i>Description</i> {{mission_info.description}}
+    <hr/>
+    <ul>
+        <li>
+            <h4>Current Task Templates</h4>
+            <ol>
+                {% for task_info in mission_info.task_templates %}
+                    <li>
+                        <a href="/admin/missions/taskinfo/{{task_info.id}}">{{task_info.name}}</a>
+                    </li>
+                {% endfor %}
+            </ol>
+            <h4>Previous Missions</h4>
+            <ul>
+                {% for mission in mission_info.mission_set.all.reverse %}
+                    <li>
+                        <a href="/staff/mission/{{mission.id}}">{{mission.name}} {{mission.created_at}}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+    <hr/>
+    <a href="javascript:toggle('yaml')">Show/hide YAML</a>
+    <a href="javascript:toClip('yaml')">Copy YAML to clipboard</a><br/>
+    <div id="yaml" style="display:none;">
+      <pre style="white-space: pre-wrap">{{ mission_info.to_yaml }}</pre>
+    </div>  
+  </div>
+</body>

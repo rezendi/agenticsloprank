@@ -1,0 +1,10 @@
+{% extends 'admin/change_form.html' %}
+
+{% block submit_buttons_bottom %}
+{{ block.super }}
+    <div class="submit-row">
+        <input type="submit" value="ReRun Task" name="_rerun_task" />
+        <input type="submit" value="ReRender Task" name="_rerender_task" />
+        <input type="submit" value="View Task" name="_view_task" />
+    </div>
+{% endblock %}

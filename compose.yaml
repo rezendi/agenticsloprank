@@ -1,0 +1,44 @@
+services:
+  web:
+    build: .
+    image: &yamlls yamllms
+    command: gunicorn yamllms.wsgi:application --bind 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - DB_HOST=postgres
+      - PRODUCTION=false
+      - DEBUG=true
+    depends_on:
+      - postgres
+
+  worker:
+    build: .
+    image: &yamlls yamllms
+    command: python manage.py rqworker
+    env_file: .env
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - postgres
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: pgpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data 
+
+volumes:
+  pgdata:

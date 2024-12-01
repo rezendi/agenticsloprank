@@ -1,0 +1,13 @@
+{% include "header.html" %}
+<body>
+  <main class="text-center">
+    <div>
+      <h2>The Dispatch</h2>
+    </div>
+    <h3>
+      {% if error %} {{ error }} {% else %} Success! You've authorized The Dispatch to access your Sentry data.
+      <br />
+      Return to your <a href="/dashboard">dashboard</a>. {% endif %}
+    </h3>
+  </main>
+</body>

@@ -1,0 +1,74 @@
+{% load markdown_extras %}
+{% include "header.html" %}
+<body>
+  <body class="container">
+    <div class="header">
+      <div>
+        <a class="pl-3 button-primary" href="/admin/missions/task/{{task.id}}">Edit</a>
+        |
+        <a href="/staff/mission/{{task.mission_id}}">Mission</a>
+        |
+        <a href="/running/{{task.mission_id}}">View Run</a>
+        |
+        <a href="/reports/{{task.mission_id}}">View Report</a>
+      </div>
+      <div><a href="/staff">The Dispatch - Staff - Task View</a></div>
+    </div>
+    <div class="main mt-6">
+      <h3>{{task.name}}</h3>
+      <p>
+        <b>{{ task.get_status_display}}</b>
+        {% if task.status == 2 %}{{task.completed_at}};{% endif %}
+        edited {{task.edited_at}}
+      </p>
+      <i>Response</i>
+      <pre style="white-space: pre-wrap">{{ task.response }}</pre>
+
+      {% if task.prompt %}
+      <hr />
+      <i>Prompt</i>
+      <pre style="white-space: pre-wrap">{{ task.prompt }}</pre>
+      {% endif %}
+
+      <h3>Extras</h3>
+      <pre style="white-space: pre-wrap">{{ task.pretty_extras }}</pre>
+      <h3>Structured data</h3>
+      <pre style="white-space: pre-wrap">{{ task.pretty_structured_data }}</pre>
+      {% if task.final_prompt %}
+        <a href="javascript:toggle('final_prompt')">Show/hide final prompt</a><br/>
+        <div id="final_prompt" style="display:none;">
+          <p><i>Final prompt</i></p>
+          <pre style="white-space: pre-wrap">{{ task.final_prompt }}</pre>
+        </div>
+      {% endif %}
+
+      <br/>
+      <a href="javascript:toggle('yaml')">Show/hide YAML</a>
+      <a href="javascript:toClip('yaml')">Copy YAML to clipboard</a><br/>
+      <div id="yaml" style="display:none;">
+        <pre style="white-space: pre-wrap">{{ task.to_yaml }}</pre>
+      </div>  
+      <div>
+        <hr />
+        <br/><i>ID</i> {{task.id}}
+        <br/><i>Category</i> {{task.get_category_display}}
+        <br/><i>Order</i> {{task.order}}
+        <br/><i>Reporting</i> {{task.get_reporting_display}}
+        <br/><i>Visibility</i> {{task.get_visibility_display}}
+        <br/><i>URL</i> {{task.url}}
+        <br/><i>LLM</i> {{task.get_llm}}
+        <br/><i>Mission</i> <a href="/staff/mission/{{task.mission_id}}">{{task.mission}}</a>
+        <br/><i>Parent task</i> <a href="/staff/task/{{task.parent_id}}">{{task.parent}}</a>
+        <br/><i>Depends on URLs</i> {{task.depends_on_urls}}
+        <br/><i>Flags</i> {{task.flags}}
+        <br/><i>All prerequisite tasks</i> {{prereqs}}
+        {% if task.raw_data %}
+        <br/><i>Raw data</i> <a href="/staff/raw_data/{{task.raw_data.id}}">{{task.raw_data}}</a>
+        {% endif %}
+        {% if task.previous %}
+          <br/><i>Previous</i> <a href="/staff/task/{{task.previous.id}}">{{task.previous}}</a>
+        {% endif %}
+      </div>
+    </div>
+
+</body>

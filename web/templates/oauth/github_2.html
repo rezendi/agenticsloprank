@@ -1,0 +1,27 @@
+{% include "header.html" %}
+<body class="text-center dark-bg">
+  <main>
+    <header class="sticky">
+      <a class="ml-3" href="/">
+        <h1>The Dispatch</h1>
+      </a>
+      <nav>    
+      </nav>
+    </header>
+    <div class="mt-5 demo-form mild-border m-auto">
+      <div class="form-content">
+        <h2 class="mb-half">The Dispatch - GitHub</h2>
+        <br/>
+        {% if action == "install" %}
+          <h3>Thanks for joining The Dispatch!</h3>
+          <p>You can now go to your <a href="/dashboard">dashboard</a> and run a report.</p>
+          <p>Please email us at <a href="mailto:support@thedispatch.ai">support@thedispatch.ai</a> with any questions or concerns; we will respond promptly.</p>
+        {% elif integration %}
+          <a class="unstyled" href="https://github.com/apps/the-dispatch-metadata-only"><button class="submit-button mb-2">Configure The Dispatch for GitHub</button></a>
+        {% else %}
+          <a class="unstyled" href="https://github.com/apps/the-dispatch-metadata-only"><button class="submit-button mb-2">Install The Dispatch for GitHub</button></a>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+</body>

@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% load markdown_extras %}
+{% load static %}
+{% load custom_filters %}
+{% load tooltip_tags %}
+
+{% block title %}YamLLMs Report: {{mission.name}}{% endblock %}
+
+{% block meta %}
+  {{ block.super}}
+  <meta property="og:title" content="YamLLMs - {{mission.name}}" />
+  <meta property="og:description" content="Software project analysis from YamLLMS" />
+  <meta property="og:url" content="https://yamllms.ai/reports/{{mission.id}}" />
+  <meta property="og:type" content="article" />
+  <meta name="ai-generated" content="analysis" />
+{% endblock %}
+
+{% block extend_head %}
+  <link rel="canonical" href="https://yamllms.ai/reports/{{mission.id}}/" />
+  <link rel="stylesheet" href='{% static "report-styles.css" %}' />
+  <link rel="stylesheet" href="{% static 'simple-datatables.css' %}"/>
+{% endblock %}
+
+{% block content %}
+  <body class="container report-container">
+    <div class="header">
+      <div class="text-left">
+        {% if user.is_authenticated %}
+            <a href="{{user.dashboard_link}}" class="pl-3 unstyled">&lsaquo; Dashboard</a>
+        {% else %}
+          <a href="/reports/" class="pl-3 unstyled">&lsaquo; Reports</a>
+        {% endif %}
+      </div>
+      <div>
+        <a href="/" class="unstyled home">YamLLMs</a>
+      </div>
+      <div>
+        <button id="menu-button" class="menu-icon">&#9776;</button>
+      </div>
+    </div>
+
+    <div class="subnav-container">
+      <div id="subnav">
+        <div class="subnav-panel">
+          {% if user.is_staff %}
+          <div class="staff-buttons mb-2">
+            <a class="button-primary unstyled" href="/admin/missions/mission/{{mission.id}}">Edit</a>
+            <a class="button-primary unstyled" href="/running/{{mission.id}}">View Run</a>
+          </div>
+          {% endif %}
+          <a href="#report-summary" onclick="toggleSubnav();"><img src="{% static 'icons/doc.svg' %}" alt="Summary Icon">Summary</a>
+          {% if sub_reports %}
+            
+              <!-- Quantified Reports Section -->
+              {% if sub_reports|has_category:"Quantified Report" %}
+              <div class="accordion-item">
+                <div class="accordion-header">
+                  <a href="#quantified-reports" onclick="toggleSubnav();"><img src="{% static 'icons/table.svg' %}" alt="Table Icon">Quantified Reports</a>
+                  <img class="accordion-caret" onclick="toggleAccordion(this)" src="{% static 'icons/chevron-down.svg' %}" alt="Down Chevron"/>
+                </div>
+                <div class="accordion-content">
+                  {% for report in sub_reports %}
+                    {% if report.get_category_display == 'Quantified Report' %}
+                      <a href="#aspect_{{forloop.counter}}" onclick="toggleSubnav();">{{report.subnav_name}}</a>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+              <!-- Detailed Reports Section -->
+              {% if sub_reports|has_non_category:"Quantified Report" %}
+              <div class="accordion-item">
+                <div class="accordion-header">
+                  <a href="#detailed-aspects" onclick="toggleSubnav();"><img src="{% static 'icons/list.svg' %}" alt="List Icon">Detailed Reports</a>
+                  <img class="accordion-caret" onclick="toggleAccordion(this)" src="{% static 'icons/chevron-down.svg' %}" alt="Down Chevron"/>
+                </div>
+                <div class="accordion-content">
+                  {% for report in sub_reports %}
+                    {% if report.get_category_display != 'Quantified Report' %}
+                      <a href="#aspect_{{forloop.counter}}" onclick="toggleSubnav();">{{report.subnav_name}}</a>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+          {% endif %}
+          {% if mission.followup_tasks %}
+            <a href="#followup_qs" onclick="toggleSubnav();"><img src="{% static 'icons/bubble.svg' %}" alt="Bubble Icon" />Followup Questions</a>
+          {% endif %}
+          {% if mission.previous %}
+            <a href="/reports/{{mission.previous.id}}">&larr;&nbsp;Previous Report</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="report-contents px-2">
+      <div id="report-summary" class="mt-6">
+        {% include "_report_header.html" with mission=mission project=project %}
+        {{ mission.mission_report | markdown | safe }}
+      </div>
+
+      {% if sub_reports %}
+        {% if sub_reports|has_category:"Quantified Report" %}
+          <div id="quantified-reports" class="mt-6 primary-divider"></div>
+          <div class="detailed-aspects mb-4">
+            <h1>Quantified Reports</h1>
+              
+              <!-- Loop for Quantified Reports -->
+              {% for report in sub_reports %}
+                {% if report.get_category_display == 'Quantified Report' %}
+                  <div id="aspect_{{forloop.counter}}" class="report-section">
+                    <h2 class="secondary-divider">{{report.name}}</h2>
+                    <a name="aspect_{{forloop.counter}}"></a>
+                    <br/><br/>
+                    {% if report.is_fixed_window %}<hr/><h3>{{report.name}}</h3>{% endif %}
+                    {{ report.render | markdown | safe }}
+                  </div>
+                {% endif %}
+              {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if sub_reports|has_non_category:"Quantified Report" %}
+          <div id="detailed-aspects" class="mt-6 primary-divider"></div>
+          <div class="detailed-aspects mb-4">
+              <h1>Detailed Reports</h1>
+          
+              <!-- Loop for Non-Quantified Reports -->
+              {% for report in sub_reports %}
+                {% if report.get_category_display != 'Quantified Report' %}
+                  <div id="aspect_{{forloop.counter}}" class="report-section">
+                    <h2 class="secondary-divider">{{report.name}}</h2>
+                    <a name="aspect_{{forloop.counter}}"></a>
+                    <br/><br/>
+                    {% if report.is_fixed_window %}<hr/><h3>{{report.name}}</h3>{% endif %}
+                    {{ report.render | markdown | safe }}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            
+          </div>
+        {% endif %}
+      {% endif %}
+
+      {% if mission.followup_tasks %}
+        <div id="followup_qs" class="primary-divider"></div>
+        <div class="followups">
+          <h2 class="mt-6 secondary-divider">Followup Questions</h2>
+          {% for task in mission.followup_tasks %}
+            <blockquote>
+              {{task.followup_prompt | markdown | safe}}
+            </blockquote>
+              {% if task.get_status_display == "In Process"%}
+                In Process (wait 30-60 seconds and refresh the page)
+              {% else %}
+                {{task.render | markdown | safe}}
+              {% endif %}
+              <hr/>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if followup_ok or request.user.is_staff %}
+      <div id="staff_features" class="staff-section mb-6">
+        <div class="row">
+          <h3>New Followup Question</h3>
+          {% tooltip "Ask for additional detail or clarification about this report based on the available data sources." %}
+        </div>
+        <form method="post" action="/ask_followup/" class="follow-up-form">
+          {% csrf_token %}
+          <input type="hidden" name="mission_id" value="{{mission.id}}">
+          <textarea placeholder="e.g. tell me more about..." name="question"></textarea>
+          <br/>
+          <input class="primary-pill-button" type="submit" value="Ask">
+        </form>
+
+        {% if request.user.is_staff %}
+          <h2 class="secondary-divider">Staff Features</h2>
+          <h3>Email this report</h3>
+          <form method="post" action="/staff/email_report">
+            {% csrf_token %}
+            <input type="hidden" name="mission_id" value="{{mission.id}}">
+            <input class="input-field" name="email" size="40">
+            <input class="submit-button" type="submit" value="Send">
+          </form>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </body>
+{% endblock %}
+{% block scripts %}
+  <script src="{% static 'github-logo-loader.js' %}"></script>
+  <script src="{% static 'diffs-processing.js'%}"></script>
+  <script src="{% static 'subnav-section-highlight.js'%}"></script>
+  <script src="{% static 'simple-datatables.js' %}"></script>
+  <script src="{% static 'subnav-toggle.js' %}"></script>
+  <script src="{% static 'tabs.js' %}"></script>
+  <script src="{% static 'accordion.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Function to initialize tables
+      function initializeTables(selector, options) {
+            const tables = document.querySelectorAll(selector);
+            tables.forEach(function(table) {
+                new simpleDatatables.DataTable(table, options);
+            });
+        }
+        // Initialize other interactive tables
+        initializeTables(".table-container table", {
+            searchable: false,
+            fixedHeight: false,
+            perPage: 10,
+            perPageSelect: false,
+        });
+        
+        // Initialize interactive tables for harvest-forecast tables
+        initializeTables(".harvest-forecast-table table", {
+            searchable: true,
+            sortable: false,
+            fixedHeight: false,
+            perPage: 25,
+            perPageSelect: false,
+            columns: [
+                { select: 9, sort: "desc" } // selecting the "diff" column
+            ],
+        });
+
+        // Initialize interactive tables for dev quant table
+        initializeTables(".dev-quant-table table", {
+            searchable: true,
+            sortable: false,
+            fixedHeight: false,
+            perPage: 10,
+            perPageSelect: false,
+        });
+        
+        // Replace failing avatars
+        const avatars = document.querySelectorAll('.dev-quant-table table img, .pr-table img');
+        const fallbackImage = "{% static 'logos/sans-github.svg' %}";
+
+        avatars.forEach(avatar => {
+            //console.log(`evaluating ${avatar.src}`);
+            avatar.onerror = function() {
+                //console.log(`Error loading image: ${avatar.src}`); 
+                avatar.src = fallbackImage; // Set the fallback image on error
+                //console.log(`replacing src url with ${avatar.src}`);
+            };
+
+            // Preload the avatar to check if it loads correctly
+            const img = new Image();
+            img.src = avatar.src;
+            img.onload = function() {
+                //console.log(`Image loaded successfully: ${avatar.src}`);
+            };
+            img.onerror = function() {
+                //console.log(`Image failed to load, setting fallback: ${avatar.src}`);
+                avatar.src = fallbackImage; // Set the fallback image if it fails to load
+            };
+        });
+      });
+      const readMoreElements = document.querySelectorAll('.read-more');
+    
+      readMoreElements.forEach(element => {
+          element.addEventListener('click', function() {
+              const rationale = this.previousElementSibling;
+              
+              if (rationale.classList.contains('expanded')) {
+                  rationale.style.maxHeight = rationale.scrollHeight + 'px';
+                  rationale.classList.remove('expanded');
+                  setTimeout(() => {
+                      rationale.style.maxHeight = '4rem';
+                  }, 10);
+                  this.textContent = '[+] Read More';
+              } else {
+                  rationale.classList.add('expanded');
+                  rationale.style.maxHeight = rationale.scrollHeight + 'px';
+                  this.textContent = '[-] Hide Contents';
+              }
+          });
+      });
+      
+  </script>
+{% endblock %}

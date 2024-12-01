@@ -1,0 +1,36 @@
+mission: "Fact Check"
+description: Fact check the contents of an online URL using Bing News
+flags: { "single_task_chain": "true" } #  final report is predicated only on the last task in the chain
+base_llm: nvidia/llama-3.1-nemotron-70b-instruct
+base_prompt: |
+  # Assess Credibility
+
+  List all of the factual claims provided. Then, for each claim, briefly assess its credibility based on the verification / support from the corresponding sources. Be concise, no yapping.
+  Be sure to always cite and, crucially, link to sources. Note that you MUST assess ALL of the claims.
+
+tasks:
+  - article:
+      name: Article in Question
+      category: Scrape
+      base_url: https://www.example.com/url # special case URL: replaced at runtime with the URL of the article to be fact-checked
+
+  - claims:
+      name: List of Claims
+      parent: article
+      category: LLM Report
+      base_prompt: |
+        # List Factual Assertions
+
+        What follows is text scraped from an online article.
+        Briefly itemize all of the most salient factual assertions made in the article. Be terse and concise: no yapping.
+        Note that projections and opinions, or claims that something _would_ or _could_ happen, are not factual assertions.
+        Nor are judgement calls, arguable categorizations, indications, suggestions, attempts to draw conclusions, or any other subjective assessments.
+        Focus strictly on verifiable, concrete, testable facts that are either true or false.
+
+        Output your findings as a JSON list of strings, with the first string being a one-sentence summary of the article, and every subsequent string being a factual assertion.
+
+  - sources:
+      name: Sources for Claims
+      parent: claims
+      category: API
+      base_url: https://api.bing.microsoft.com/

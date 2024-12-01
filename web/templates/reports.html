@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load markdown_extras %}
+{% load static %}
+{% load custom_filters %}
+
+{% block meta %}
+  {{block.super}}
+  <meta property="og:title" content="YamLLMs - Public Reports" />
+  <meta property="og:description" content="Open Source Software Project Analysis from YamLLMs" />
+  <meta property="og:url" content="https://yamllms.ai/reports/" />
+  <meta property="og:type" content="website" />
+  <meta name="ai-generated" content="analysis" />
+{% endblock %}
+
+{% block content %}
+<body class="container dark-bg">
+  {% include "_home-header.html" %}
+  <div class="mt-4 demo-form main fd-column">
+    {% if watchlist %}
+      <h1 class="text-center">Open Source Watchlist</h2>
+    {% else %}
+      <div class="flex">
+        <div class="logo-container">
+          <img src="{% static 'logos/sans-github.svg' %}" alt="GitHub Logo" class="integration-logo">
+        </div>
+        <h2>Public Reports</h2>
+      </div>
+    {% endif %}
+    {% if mission_list %}
+        {% regroup mission_list by week as week_list %}
+          {% for week in week_list %}
+              <div class="primary-divider"></div>
+              <h2 class="week-header">Reports for Week of {{ week.list.0.month }} {{ week.list.0.day }}, {{ week.list.0.year }}</h2>
+              {% for mission in week.list %}
+                  <div class="customer-report-row">
+                      <div class="repo-logo" data-repo="{{ mission.extras.github|get_first_repo }}">
+                      </div>
+                      <div class="report-info">
+                          <h3>
+                            <a href="/reports/{{ mission.id }}/" class="unstyled">{{ mission.name }}</a>
+                          </h3>
+                          <label class="report-date">{{ mission.created_at }}</label>
+                      </div>
+                  </div>
+              {% endfor %}
+            {% endfor %}
+        {% if mission_list.has_other_pages %}
+          <div class="pagination">
+              {% if mission_list.has_previous %}
+                  <a href="?page={{ mission_list.previous_page_number }}">&laquo; Previous</a>
+              {% endif %}
+              
+              {% for i in page_numbers %}
+                  {% if mission_list.number == i %}
+                      <span class="active">{{ i }}</span>
+                  {% else %}
+                      <a href="?page={{ i }}">{{ i }}</a>
+                  {% endif %}
+              {% endfor %}
+              
+              {% if mission_list.has_next %}
+                  <a href="?page={{ mission_list.next_page_number }}">Next &raquo;</a>
+              {% endif %}
+          </div>
+      {% endif %}
+    {% else %}
+        <p>No reports are available.</p>
+    {% endif %}
+  </div>
+  <div class="gradients">
+    <div class="gradient-1"></div>
+    <div class="gradient-2"></div>
+    <div class="gradient-3"></div>
+  </div>
+</body>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'smooth-scroller.js'%}"></script>
+  <script src="{% static 'header-scroll.js'%}"></script>
+  <script src="{% static 'project-report-links.js' %}"></script>
+  <script>
+    const defaultLogoUrl = "{% static 'logos/sans-github.svg' %}";
+  </script>
+  <script src="{% static 'github-logo-loader.js' %}"></script>
+{% endblock %}
