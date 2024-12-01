@@ -105,6 +105,7 @@ class Task(BaseModel):
         explicit = self.category in [
             TaskCategory.LLM_REPORT,
             TaskCategory.FINALIZE_MISSION,
+            TaskCategory.LLM_DECISION,
         ]
         return explicit or self.reporting != Reporting.NO_REPORT
 
