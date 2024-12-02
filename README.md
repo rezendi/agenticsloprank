@@ -1,8 +1,8 @@
 # YamLLMs
 
-A framework that lets you define, run, and store sequences of LLM-related tasks with minimal code (sometimes, none.)
+A framework for defining, running, and storing sequences of LLM-related tasks with minimal code (sometimes, none.)
 
-YamLLMs is focused on using LLMs as 'software Swiss Army Knives' or '[anything-to-anything machines](https://www.strangeloopcanon.com/p/generative-ai-or-the-anything-from)' — automating missions such as analyzing projects, fact-checking articles, assessing and rating artifacts such as documents or pull requests, transcribing videos, turning unstructured data into structured JSON or structured data into prose reports, and in general automating aspects of pipelines or processes that were previously manual because they required judgement, fuzzy logic, or difficult / unpredictable / ill-defined inputs or outputs. YamLLMs lets you easily define, configure, run, and persist such missions.
+YamLLMs is focused on using LLMs as 'software Swiss Army Knives' or '[anything-to-anything machines](https://www.strangeloopcanon.com/p/generative-ai-or-the-anything-from)' rather than chatbots — automating missions such as analyzing projects, fact-checking articles, assessing and rating artifacts such as documents or pull requests, transcribing videos, turning unstructured data into structured JSON or structured data into prose reports, and in general automating aspects of pipelines or processes that were previously manual because they required judgement, fuzzy logic, or difficult / unpredictable / ill-defined inputs or outputs. YamLLMs lets you easily define, configure, run, and persist such missions.
 
 These missions are broken down into sets of individual tasks, such as fetching data from an API, scraping a web site, or invoking an LLM to make a decision, report on a set of inputs, generate a structured JSON output, or evaluate a previous output. These tasks can be defined by simple YAML files. The [YAML which defines a mission](./missions/management/seed.yaml) that:
 
@@ -12,7 +12,7 @@ These missions are broken down into sets of individual tasks, such as fetching d
 4. Runs a recursive agent to assess the potential risks this project may face
 5. Summarizes all of the above in a final report
 
-...is only 44 lines long:
+...is only 45 lines long:
 
 ```yaml
 mission: "GitHub Repo Analysis"
@@ -51,6 +51,7 @@ tasks: # repo/placeholder in URL is special-case, to be replaced with the actual
       parent: commits
       category: LLM Decision
       base_url: https://github.com/repo/placeholder/files
+      report: yes
   - risk_detective:
       category: Agent Task
       base_url: https://yamllms.ai/risk/assess
@@ -313,6 +314,8 @@ At present evalutions can include any combination of these outcomes if a failure
 This framework evolved from and with a startup, rather than having been conceived _de novo_, and so has various idiosyncracies as a result of that: task categorization, in particular, is clearly an evolved rather than designed taxonomy, and concepts such as "customers" tend to be intended for business not open-source use. Certain other aspects also still betray a certain "get things done" crudeness, which we tend to view as virtue more than vice, but definitely include some infelicities. In general, if it looks like the code has been carved somewhat crudely out of some larger application ... it probably has been.
 
 At present only the OpenAI LLM plugin explicitly supports predefined structured / JSON outputs, though implementing it for other LLMs should be fairly straightforward (and a combination of good prompting and the `get_json_from` method in `util.py` can render them unnecessary).
+
+When the input data for an LLM task exceeds the size of the context window, at present we simply truncate that data. For many purposes, this turns out to be perfeclty acceptable; modern context windows are hundreds of pages long, and especially when running reports on data ordered reverse chronologically, more than enough germane data is maintained. However, depending on context, other approaches such as dividing single tasks into multiple tasks may be desirable. This should be relatively straightforward to implement within the YamLLMs framework.
 
 ## Out Of The Box
 

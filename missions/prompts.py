@@ -33,7 +33,7 @@ def get_prompt_from_github(key):
     filename = key.split("/")[-1] + ".md"  # convert url to its suffix
     if cache.get("prompt_%s" % filename):
         return cache.get("prompt_%s" % filename)
-    token = os.environ["GITHUB_TOKEN"]
+    token = os.environ.get("GITHUB_TOKEN")
     auth = github.Auth.Token(token)
     gh = github.Github(
         auth=auth,

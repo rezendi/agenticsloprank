@@ -34,6 +34,7 @@ tasks: # repo/placeholder in URL is special-case, to be replaced with the actual
       parent: commits
       category: LLM Decision
       base_url: https://github.com/repo/placeholder/files
+      report: yes
   - risk_detective:
       category: Agent Task
       base_url: https://yamllms.ai/risk/assess
