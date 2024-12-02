@@ -149,19 +149,19 @@ class Mission(BaseModel):
 
     # by default, we report on all the previous reports except interim agent reports
     def final_input_tasks(self):
-        exclude = [
-            TaskCategory.QUANTIFIED_REPORT,
-            TaskCategory.LLM_DECISION,
-            TaskCategory.FETCH_FOR_LLM,
-            TaskCategory.FINALIZE_MISSION,
-            TaskCategory.POST_MISSION,
-            TaskCategory.LLM_EVALUATION,
-        ]
-        input_tasks = self.task_set.exclude(category__in=exclude)
-
         if self.flags.get("single_task_chain") == "true":
+            exclude = [
+                TaskCategory.FETCH_FOR_LLM,
+                TaskCategory.LLM_DECISION,
+                TaskCategory.LLM_EVALUATION,
+                TaskCategory.QUANTIFIED_REPORT,
+                TaskCategory.FINALIZE_MISSION,
+                TaskCategory.POST_MISSION,
+            ]
+            input_tasks = self.task_set.exclude(category__in=exclude)
             return [input_tasks.last()]
 
+        input_tasks = self.task_set.filter(category=TaskCategory.LLM_REPORT)
         input_tasks = input_tasks.order_by("order")
 
         # exclude interim agent reports
@@ -296,9 +296,7 @@ class Mission(BaseModel):
             self.prompt = get_prompt_from_github(filename)
         if not self.prompt and self.mission_info:
             self.prompt = self.mission_info.base_prompt
-        log("self.prompt", self.prompt)
         if self.prompt and len(self.prompt) < 64 and not " " in self.prompt.strip():
-            log("getting from github")
             self.prompt = get_prompt_from_github(self.prompt)
         self.save()
         return self.prompt or ""

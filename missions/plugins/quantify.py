@@ -8,7 +8,7 @@ from missions import plugins
 @plugins.hookimpl
 def quantify(task):
     # risk quantification is a slightly special case
-    if task.url == BASE_RISK_URL + "/quantify":
+    if task.url == QUANTIFY_RISK_URL:
         return quantify_project_risks(task)
 
     # first prereq is always the direct parent

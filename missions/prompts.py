@@ -31,6 +31,7 @@ def get_prompt_from_github(key):
     if key.startswith(GOOGLE_CHAT_API):
         key = "gchat"
     filename = key.split("/")[-1] + ".md"  # convert url to its suffix
+    log("filename", filename)
     if cache.get("prompt_%s" % filename):
         return cache.get("prompt_%s" % filename)
     token = os.environ.get("GITHUB_TOKEN")
@@ -40,6 +41,7 @@ def get_prompt_from_github(key):
         user_agent="PyGitHub/Python|YamLLMs|info@" + settings.BASE_DOMAIN,
     )
     repo = gh.get_repo(settings.GITHUB_PROMPTS_REPO)
+    log("repo", repo)
     prompt = get_gh_file(repo, {"name": filename})
     cache_minutes = 1 if settings.DEBUG or settings.TESTING else 60
     cache.set("prompt_%s" % filename, prompt, cache_minutes * 60)
