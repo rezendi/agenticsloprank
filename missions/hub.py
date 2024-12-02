@@ -179,6 +179,14 @@ def assemble_final_tasks(mission):
     if final.count() > 0:
         return final
 
+    # not necessary but conceptually nice to have a prerequisite
+    exclude = [
+        TaskCategory.AGENT_TASK,
+        TaskCategory.FINALIZE_MISSION,
+        TaskCategory.POST_MISSION,
+    ]
+    prereqs = existing.filter(status=TaskStatus.COMPLETE).exclude(category__in=exclude)
+
     # if no final tasks exist, by default, we create a final report-of-reports task
     if mission.flags.get("no_new_final") != "true":
         log("Creating final task")
@@ -187,7 +195,7 @@ def assemble_final_tasks(mission):
         llm = GPT_4O if mission.llm == GPT_4O_MINI else mission.get_llm()
         task = Task.objects.create(
             mission=mission,
-            parent=existing.last(),  # not necessary but conceptually nice
+            parent=prereqs.last(),
             llm=llm,
             status=TaskStatus.CREATED,
             category=TaskCategory.FINALIZE_MISSION,
