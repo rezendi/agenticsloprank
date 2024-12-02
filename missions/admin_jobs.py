@@ -318,17 +318,3 @@ def evaluate_task_errors(task):
     if errors:
         return {"name": "%s" % task, "problem": "Errors: %s" % errors}
     # the LLM evaluation tasks take care of more sophisticated analysis
-
-
-def active_workers():
-    url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
-    if url.startswith("rediss://"):
-        url = url + "?ssl_cert_reqs=none"
-    r = Redis.from_url(url)
-    workers = Worker.all(connection=r)
-    return [w for w in workers if w.state != "?"]
-
-
-def queue_length():
-    queue = django_rq.get_queue()
-    return len(queue)

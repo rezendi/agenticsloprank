@@ -2,20 +2,11 @@ from django.contrib import admin, auth
 from django.http import HttpResponseRedirect
 from .models import *
 from .hub import fulfil_mission, run_task
-from .admin_jobs import active_workers, queue_length
 
 
 class YamLLMsAdminSite(admin.AdminSite):
     site_header = "YamLLMs administration"
     site_title = "YamLLMs site admin"
-    index_template = "admin/new_base.html"
-
-    def index(self, request, extra_context=None):
-        extra_context = extra_context or {}
-        extra_context["workers"] = len(active_workers())
-        extra_context["worker_states"] = [w.state for w in active_workers()]
-        extra_context["queue_length"] = queue_length()
-        return super(YamLLMsAdminSite, self).index(request, extra_context)
 
 
 admin_site = YamLLMsAdminSite(name="yamllms_admin")
