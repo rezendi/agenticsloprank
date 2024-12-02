@@ -117,7 +117,7 @@ def get_gh_repo(task, repo=None):
         user_agent="PyGitHub/Python|YamLLMs|info@" + settings.BASE_DOMAIN,
         per_page=100,
     )
-    log("GitHub rate limit", gh.get_rate_limit().remaining)
+    log("GitHub rate limit", gh.get_rate_limit().core.remaining)
     try:
         api = gh.get_repo(repo)
         return api
