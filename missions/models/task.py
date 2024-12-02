@@ -30,7 +30,7 @@ class Task(BaseModel):
     # other data dependencies, if any
     depends_on_urls = models.JSONField(default=list, blank=True)
     visibility = models.IntegerField(
-        choices=Visibility.choices, default=Visibility.PRIVATE
+        choices=Visibility.choices, default=Visibility.PUBLIC
     )
     url = models.URLField(null=True, blank=True)
     llm = models.CharField(max_length=256, null=True, blank=True)

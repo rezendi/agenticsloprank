@@ -22,7 +22,7 @@ class Mission(BaseModel):
         MissionInfo, on_delete=models.SET_NULL, null=True, blank=True
     )
     visibility = models.IntegerField(
-        choices=Visibility.choices, default=Visibility.PRIVATE
+        choices=Visibility.choices, default=Visibility.PUBLIC
     )
     llm = models.CharField(max_length=256, null=True, blank=True)
     previous = models.ForeignKey(
@@ -149,19 +149,18 @@ class Mission(BaseModel):
 
     # by default, we report on all the previous reports except interim agent reports
     def final_input_tasks(self):
+        exclude = [
+            TaskCategory.FETCH_FOR_LLM,
+            TaskCategory.LLM_DECISION,
+            TaskCategory.LLM_EVALUATION,
+            TaskCategory.FINALIZE_MISSION,
+            TaskCategory.POST_MISSION,
+        ]
+        valid_tasks = self.task_set.exclude(category__in=exclude)
         if self.flags.get("single_task_chain") == "true":
-            exclude = [
-                TaskCategory.FETCH_FOR_LLM,
-                TaskCategory.LLM_DECISION,
-                TaskCategory.LLM_EVALUATION,
-                TaskCategory.QUANTIFIED_REPORT,
-                TaskCategory.FINALIZE_MISSION,
-                TaskCategory.POST_MISSION,
-            ]
-            input_tasks = self.task_set.exclude(category__in=exclude)
-            return [input_tasks.last()]
+            return [valid_tasks.last()]
 
-        input_tasks = self.task_set.filter(category=TaskCategory.LLM_REPORT)
+        input_tasks = valid_tasks.filter(category=TaskCategory.LLM_REPORT)
         input_tasks = input_tasks.order_by("order")
 
         # exclude interim agent reports
@@ -176,7 +175,7 @@ class Mission(BaseModel):
                 category=TaskCategory.QUANTIFIED_REPORT
             )
 
-        return input_tasks
+        return input_tasks or [valid_tasks.last()]
 
     def tasks_to_run(self):
         return (

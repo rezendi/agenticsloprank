@@ -80,10 +80,13 @@ class MissionInfo(BaseModel):
 
     def create_mission(self):
         Mission = apps.get_model("missions", "Mission")
+        visibility = self.visibility
+        if self.customer and self.customer.privacy == Customer.CustomerPrivacy.PRIVATE:
+            visibility = Visibility.PRIVATE
         mission = Mission.objects.create(
             mission_info=self,
             name=self.name,
-            visibility=self.visibility,
+            visibility=visibility,
             llm=self.base_llm,
             prompt=self.base_prompt,
             extras=self.extras | {"mission_info_id": self.id},
@@ -131,7 +134,7 @@ class TaskInfo(BaseModel):
     # other data dependencies, if any
     depends_on_urls = models.JSONField(default=list, blank=True)
     visibility = models.IntegerField(
-        choices=Visibility.choices, default=Visibility.PRIVATE
+        choices=Visibility.choices, default=Visibility.PUBLIC
     )
     order = models.IntegerField(default=0)
     reporting = models.IntegerField(choices=Reporting.choices, default=0)

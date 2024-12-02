@@ -29,6 +29,7 @@ def setup_mission():
 @pytest.mark.django_db
 def test_task_evaluations(setup_mission):
     mission = setup_mission
+    mission.flags["evaluate"] = "true"
 
     assert mission.extras.get("evaluated") is None
 

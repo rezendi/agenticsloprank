@@ -234,6 +234,7 @@ def evaluate_task(task):
 # do internal evaluation of a mission and its tasks, and LLM evaluation of obvious incompleteness
 def evaluate_mission(mission):
     if mission.flags.get("evaluate") != "true":
+        log("Not evaluating mission", mission)
         return
 
     log("Evaluating", mission)
