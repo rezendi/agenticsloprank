@@ -8,6 +8,7 @@ from missions.apps import get_plugin_manager
 from missions import plugins
 
 MAX_AGENT_ITERATIONS = 16
+MAX_AGENT_FILES = 32
 
 
 @plugins.hookimpl
@@ -71,7 +72,16 @@ def run_agent_final_report(task):
     tool_key = task.flags.get("tool_key")
     chat_llm(task, task.parent.response, tool_key=tool_key)
     task.mark_complete()
-    return None  # indicate there are no more agent tasks to run
+    return Task.objects.create(
+        name="Quantify Risks",
+        mission=task.mission,
+        order=task.order + 1,
+        visibility=task.visibility,
+        category=TaskCategory.QUANTIFIED_REPORT,
+        flags=task.flags,
+        parent=task,
+        url=QUANTIFY_RISK_URL,
+    )
 
 
 def answer_agent(task):
@@ -250,8 +260,8 @@ def assess_risk_agent(task):
         main = repo.get_branch(repo.default_branch)
         tree = repo.get_git_tree(main.commit.sha, recursive=True)
         paths = get_tree_paths(tree, max_files=2048)
-        # return the 64 largest files
-        paths = sorted(paths, key=lambda x: x[1], reverse=True)[:64]
+        # return the 32 largest files
+        paths = sorted(paths, key=lambda x: x[1], reverse=True)[:MAX_AGENT_FILES]
         files = [p[0] for p in paths]
 
     # current data to analyze
@@ -301,6 +311,7 @@ def assess_risk_agent(task):
     )
     task.save()
     chat_llm(task, data_to_analyze, tool_key="analyze_risks")
+    log("response", task.response)
     llm_response = json.loads(get_json_from(task.response))
 
     task.structured_data = {

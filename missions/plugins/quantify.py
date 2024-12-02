@@ -1,4 +1,4 @@
-import json
+import yaml
 from datetime import timedelta
 from django.utils.dateparse import parse_date
 from ..util import *
@@ -488,17 +488,16 @@ def quantify_jira(task):
 
 
 def quantify_project_risks(task):
-    rating_task = task.mission.task_set.filter(url=RISK_RATING_URL).first()
-    if not rating_task:
-        log("No rating task found for risk quantification")
-        return
-    task.parent = rating_task
+    if not task.parent:
+        raise Exception("No parent found for risk quantification task")
     md = f"\n### Project Risk Ratings"
     md += "\n<div markdown='1' class='table-container risk-table'>"
     md += "| Risk | Level (1-5) | Rationale |\n"
     md += "| ---- | ------ | --------- |\n"
-    ratings = json.loads(rating_task.response or rating_task.structured_data)
-    log("ratings", ratings)
+    response = get_json_from(task.parent.response)
+    response = (response or task.parent.structured_data or "").strip()
+    # yaml is a more forgiving superset of JSON
+    ratings = yaml.safe_load(response)
     # TODO make these keys more generic / configurable, both in the function and here
     keys = [
         "delivery",
@@ -512,9 +511,14 @@ def quantify_project_risks(task):
     ]
     for key in keys:
         name = key.replace("_", " ").title()
-        md += (
-            f"| {name} | {ratings[key+'_risk_rating']} |{ratings[key+'_rationale']} |\n"
-        )
+        val = ratings.get(key)
+        if val and isinstance(val, dict):
+            rating = val.get("risk_rating")
+            rationale = val.get("rationale")
+        else:
+            rating = ratings.get(key + "_risk_rating")
+            rationale = ratings.get(key + "_rationale")
+        md += f"| {name} | {rating} |{rationale} |\n"
     md += "\n</div>\n"
     task.response = md
     return task.response

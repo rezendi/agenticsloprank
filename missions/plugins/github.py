@@ -98,7 +98,8 @@ def auth_github(task):
         return app_auth.get_installation_auth(installation_id)
     else:
         token = os.environ["GITHUB_TOKEN"]
-        log("Using environment GitHub token, length", len(token))
+        if not token:
+            log("WARNING: No GitHub token found")
         return github.Auth.Token(token)
 
 
@@ -116,7 +117,7 @@ def get_gh_repo(task, repo=None):
         user_agent="PyGitHub/Python|YamLLMs|info@" + settings.BASE_DOMAIN,
         per_page=100,
     )
-    log("GitHub, auth len", len(auth), "rate limit", gh.get_rate_limit().remaining)
+    log("GitHub rate limit", gh.get_rate_limit().remaining)
     try:
         api = gh.get_repo(repo)
         return api

@@ -38,8 +38,4 @@ tasks: # repo/placeholder in URL is special-case, to be replaced with the actual
   - risk_detective:
       category: Agent Task
       base_url: https://yamllms.ai/risk/assess
-  - quantify_risks:
-      parent: risk_detective
-      category: Quantified Report
-      base_url: https://yamllms.ai/risk/quantify
       flags: { "max_iterations": 8 }
