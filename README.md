@@ -110,7 +110,7 @@ and in its root directory, save a `.env` file with the following environment var
 
 ### Running Locally: Docker Compose
 
-- Alternatively, just run `docker-compose build && docker-compose run`
+- Alternatively, just run `docker-compose build && docker-compose run` and wait a few minutes.
 
 ### Setup and Seed
 
