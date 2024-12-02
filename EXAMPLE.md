@@ -104,6 +104,8 @@ return None
 
 If we used Bing APIs in different ways for different tasks, we would use the path of the `task.url`, or perhaps values in `task.flags`, to determine which method to call. Here we only have one Bing method, `bing_news_fact_check`, found in [bing.py](./missions/plugins/bing.py)
 
+*Please note* that in order to run this method, we need to set the environment variable `BING_NEWS_API_TOKEN`. Such a token can be [acquired for free](https://learn.microsoft.com/en-us/bing/search-apis/bing-news-search/how-to/search-for-news) for 1,000 requests/month.
+
 That method expects the outputs of our previous task: `a JSON list of strings, with the first string being a one-sentence summary of the article`, to quote that task's prompt. It uses the convenience method `get_json_from` in `util.py` to unwrap the LLM's response into JSON, then, for each fact, searches Bing News for corresponding articles. Note that it searches with 'textDecoration: True," which means the resulting URLs actually include relevant text from the linked aricles - this is a cheap way to get around having to scrape each individual article.
 
 It's worth noting that we could limit Bing to particular news sources the user considers trustworthy, e.g. only Fox News or only The New York Times depending on your political slant, by setting `bing_site` to `nytimes.com` or `foxnews.com` in the task's `flags`. (One [could also](https://support.microsoft.com/en-us/topic/advanced-search-keywords-ea595928-5d63-4a0b-9c6b-0b769865e78a) OR multiple sites together but this is left as a coding exercise for the reader.)
