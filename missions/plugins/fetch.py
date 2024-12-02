@@ -11,7 +11,7 @@ MAX_SOURCE_FILE_LENGTH = 12288
 
 
 @plugins.hookimpl
-def run_llm_decision(task):
+def implement_llm_decision(task):
     if task.url.startswith(GITHUB_PREFIX) or task.url.startswith(AZURE_API):
         create_fetch_tasks(task)
         return task

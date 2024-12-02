@@ -2,9 +2,9 @@ import json, time
 from datetime import timedelta
 from .github import *
 from ..prompts import get_prompt_from_github
-from .openai import chat_openai
 from ..models import TaskCategory, Task, TaskStatus
 from ..util import *
+from missions.apps import get_plugin_manager
 from missions import plugins
 
 MAX_AGENT_ITERATIONS = 16
@@ -36,6 +36,15 @@ def run_rating(task):
         return assess_prs(task)
 
 
+# Chat with an LLM using the appropriate provided plugin if any
+def chat_llm(task, input, tool_key=""):
+    pm = get_plugin_manager()
+    completion = pm.hook.chat_llm(task=task, input=input, tool_key=tool_key)
+    if not completion:
+        raise Exception("No implementation for LLM chat available: %s" % task)
+    return completion
+
+
 def create_subsequent_task(task, iteration=0):
     new_name = task.name.split(" Iteration")[0]
     new_name += " Iteration %s" % iteration
@@ -60,7 +69,7 @@ def create_subsequent_task(task, iteration=0):
 
 def run_agent_final_report(task):
     tool_key = task.flags.get("tool_key")
-    chat_openai(task, task.parent.response, tool_key=tool_key)
+    chat_llm(task, task.parent.response, tool_key=tool_key)
     task.mark_complete()
     return None  # indicate there are no more agent tasks to run
 
@@ -132,9 +141,9 @@ def answer_agent(task):
         analysis_so_far or "None yet",
         task_to_line_for_llm(data_task) if data_task else "None yet",
     )
-    chat_openai(task, data_to_analyze, tool_key="detective_report")
+    chat_llm(task, data_to_analyze, tool_key="detective_report")
 
-    retval = json.loads(task.response)
+    retval = json.loads(get_json_from(task.response))
     if isinstance(retval, dict) and len(retval) == 1:
         # sometimes we get a dict with a single key, unwrap it
         sole_key = list(retval.keys())[0]
@@ -291,8 +300,8 @@ def assess_risk_agent(task):
         data_line,
     )
     task.save()
-    chat_openai(task, data_to_analyze, tool_key="analyze_risks")
-    llm_response = json.loads(task.response)
+    chat_llm(task, data_to_analyze, tool_key="analyze_risks")
+    llm_response = json.loads(get_json_from(task.response))
 
     task.structured_data = {
         "response": llm_response,
@@ -341,7 +350,7 @@ def assess_risk_agent(task):
 def assess_prs(task):
     if task.is_test():
         task.response = '{"rating":4, "rationale":"Test"}'
-        task.structured_data["llm_ratings"] = [json.loads(task.response)]
+        task.structured_data["llm_ratings"] = [json.loads(get_json_from(task.response))]
         return task
 
     fetch = task.parent
@@ -398,8 +407,8 @@ def assess_prs(task):
         else:
             prompt = get_prompt_from_github("rate-pr")
             task.prompt = prompt % pr
-        chat_openai(task, diff, tool_key="perform_rating")
-        rating = json.loads(task.response)
+        chat_llm(task, diff, tool_key="perform_rating")
+        rating = json.loads(get_json_from(task.response))
         pr = [p for p in to_assess if p["number"] == number][0]
         rating["pr"] = pr
         rating["issue_info"] = issue_info
@@ -419,7 +428,7 @@ def get_issue_info_for(task, pr, number, issue_data):
     if not task.flags.get("id_corresponding_issue"):
         return {}
     # use gpt-4o-mini to get the Jira issue most relevant to a given block of text
-    # chat_openai expects a Task, so create a temporary one
+    # chat_llm expects a Task, so create a temporary one
     temp = Task(
         mission=task.mission,
         name="ID issue for PR: %s" % number,
@@ -428,11 +437,11 @@ def get_issue_info_for(task, pr, number, issue_data):
         llm=GPT_4O_MINI,
     )
     temp.prompt = get_prompt_from_github("identify-issue") % pr
-    chat_openai(temp, issue_data, tool_key="identify_issue")
+    chat_llm(temp, issue_data, tool_key="identify_issue")
     response = temp.response
     try:
         temp.delete()
-        return json.loads(response)
+        return json.loads(get_json_from(response))
     except Exception as e:
         log("Error parsing issue find response", e, response)
         return {"error": str(e)}

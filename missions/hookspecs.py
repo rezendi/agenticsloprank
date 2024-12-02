@@ -41,6 +41,14 @@ def run_llm_decision(task: Task):
 
 
 @hookspec(firstresult=True)
+def implement_llm_decision(task: Task):
+    """Implement an LLM decision, usually by creating new tasks
+
+    :param task: the task in question
+    """
+
+
+@hookspec(firstresult=True)
 def fetch_for_llm(task: Task):
     """Fetch data in response to an LLM request
 

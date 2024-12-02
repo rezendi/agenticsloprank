@@ -167,11 +167,10 @@ def run_llm_decision(task):
         task.response = chat_llm(task, input_data, tool_key=tool_key)
         task.mark_complete()
 
-    # for now, base fetch creation on the URL because that can include
-    # both the source (e.g. github) and the target (e.g. pulls/files)
+    # implement the decision - for now, this means creating a new fetch task
     if task.response and task.status == TaskStatus.COMPLETE:
         pm = get_plugin_manager()
-        completion = pm.hook.run_llm_decision(task=task)
+        completion = pm.hook.implement_llm_decision(task=task)
         if not completion:
             raise Exception("No implementation for LLM decision available: %s" % task)
 

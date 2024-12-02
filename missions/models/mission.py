@@ -296,8 +296,10 @@ class Mission(BaseModel):
             self.prompt = get_prompt_from_github(filename)
         if not self.prompt and self.mission_info:
             self.prompt = self.mission_info.base_prompt
-            if self.prompt and len(self.prompt) < 64 and not " " in self.prompt.strip():
-                self.prompt = get_prompt_from_github(self.prompt)
+        log("self.prompt", self.prompt)
+        if self.prompt and len(self.prompt) < 64 and not " " in self.prompt.strip():
+            log("getting from github")
+            self.prompt = get_prompt_from_github(self.prompt)
         self.save()
         return self.prompt or ""
 
