@@ -15,7 +15,7 @@ MAX_AGENT_FILES = 32
 def run_agent(task):
     url = task.url or ""
     if url == AGENT_REPORT_URL:
-        return run_agent_final_report(task)
+        next_task = run_agent_final_report(task)
     elif url.startswith(ASSESS_RISK_URL):
         next_task = assess_risk_agent(task)
     else:  # generic agent
