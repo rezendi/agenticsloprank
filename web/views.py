@@ -256,6 +256,8 @@ def report(request, mission_id):
 
 def running_latest(request):
     mission = Mission.objects.all().order_by("-id").first()
+    if not mission:
+        return HttpResponse("No missions found", status=404)
     return running(request, mission.id)
 
 
