@@ -408,6 +408,7 @@ def run_final_report(task):
     # don't overwrite in edge case of rerunning when many final tasks
     if not FINAL_TASK_DIVIDER in (task.mission.response or ""):
         task.mission.response = task.response
+        task.mission.rendered = ""
         task.mission.save()
 
 
