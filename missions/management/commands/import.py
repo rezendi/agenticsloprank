@@ -51,7 +51,7 @@ class Command(BaseCommand):
                 extras=data.get("extras", {}),
             )
 
-        visibility = data.get("visibility", "Private")
+        visibility = data.get("visibility", "Public")
         visibility = [v for v in Visibility.choices if v[1] == visibility][0]
         mission_info.visibility = visibility[0]
 
