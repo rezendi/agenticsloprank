@@ -12,6 +12,7 @@ django-permissions-policy==4.20.0
 django-ratelimit==4.1.0
 django-rq==2.8.1
 django-sesame==3.2.2
+django-stubs==5.1.1
 FigmaPy==2018.1.0
 google-generativeai==0.4.1
 gunicorn==22.0.0
@@ -19,6 +20,7 @@ gql==3.4.1
 Markdown==3.4.3
 markdownify==0.12.1
 mistralai==0.0.9
+mypy==1.13.0
 notion-client==2.2.1
 slack_sdk==3.26.2
 openai==1.16.2

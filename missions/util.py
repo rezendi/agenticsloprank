@@ -2,7 +2,7 @@ import datetime, json, logging
 from types import SimpleNamespace
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
-from google.generativeai.generative_models import GenerativeModel
+from google.generativeai.generative_models import GenerativeModel  # type: ignore
 import tiktoken
 import stripe
 

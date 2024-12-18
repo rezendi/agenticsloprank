@@ -126,7 +126,7 @@ else:
         DATABASES = {
             "default": {
                 "ENGINE": "django.db.backends.sqlite3",
-                "NAME": BASE_DIR / "db.sqlite3",
+                "NAME": "%s" % (BASE_DIR / "db.sqlite3"),
             }
         }
     if DB_HOST == "postgres":
@@ -219,7 +219,7 @@ CACHES = {
 }
 
 if REDIS_USE_SSL:
-    CACHES["default"]["OPTIONS"] = {"ssl_cert_reqs": None}
+    CACHES["default"]["OPTIONS"] = {"ssl_cert_reqs": None}  # type: ignore
 
 RQ_QUEUES = {
     "default": {
@@ -245,10 +245,10 @@ EMAIL_USE_TLS = True
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = "smtp.mailgun.org"
-    EMAIL_PORT = 587
+    EMAIL_PORT = 587  # type: ignore
     EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ.get("MAILGUN_LOCAL_ADDRESS")
-    EMAIL_HOST_PASSWORD = os.environ.get("MAILGUN_LOCAL_PASSWORD")
+    EMAIL_HOST_USER = os.environ.get("MAILGUN_LOCAL_ADDRESS", "")
+    EMAIL_HOST_PASSWORD = os.environ.get("MAILGUN_LOCAL_PASSWORD", "")
 
 
 # Sesame
@@ -311,7 +311,7 @@ PERMISSIONS_POLICY = {
     "midi": [],
     "payment": [],
     "usb": [],
-}
+}  # type: ignore
 
 # Our own API, very very basic
 API_KEYS = ["dai_41_is_all_you_need"]

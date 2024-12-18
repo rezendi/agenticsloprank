@@ -2,7 +2,7 @@ import json
 from django.db import models
 from django.core import serializers
 from django.contrib.auth.models import AbstractUser
-from encrypted_model_fields.fields import EncryptedCharField
+from encrypted_model_fields.fields import EncryptedCharField  # type: ignore
 from ..util import *
 
 
