@@ -1,8 +1,8 @@
 import datetime, os, requests, time
 from django.utils import timezone
-from atlassian import Jira
-from atlassian import Confluence
-from markdownify import markdownify as md
+from atlassian import Jira  # type: ignore
+from atlassian import Confluence  # type: ignore
+from markdownify import markdownify as md  # type: ignore
 from ..util import *
 from missions import plugins
 

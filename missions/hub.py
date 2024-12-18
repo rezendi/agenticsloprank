@@ -1,4 +1,4 @@
-from django_rq import job
+from django_rq import job  # type: ignore
 import time
 from .models import *
 from .util import *

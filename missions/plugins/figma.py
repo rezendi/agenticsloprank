@@ -1,5 +1,5 @@
 import os, requests, time, urllib
-import FigmaPy as figmapy
+import FigmaPy as figmapy  # type: ignore
 from ..util import *
 from missions import plugins
 

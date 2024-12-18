@@ -1,5 +1,5 @@
 import time, traceback
-from django_rq import job
+from django_rq import job  # type:ignore
 from django.conf import settings
 from missions.apps import get_plugin_manager
 from .models import TaskStatus, TaskCategory, Task, Mission

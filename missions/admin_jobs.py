@@ -1,7 +1,4 @@
-import datetime, json, random, requests, os
-from redis import Redis
-from rq import Worker
-import django_rq
+import datetime, json, random, requests
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from django.conf import settings

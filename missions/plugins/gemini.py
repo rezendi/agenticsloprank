@@ -1,6 +1,6 @@
 import os
-import google.generativeai as genai
-from google.generativeai.generative_models import GenerativeModel
+import google.generativeai as genai  # type: ignore
+from google.generativeai.generative_models import GenerativeModel  # type: ignore
 from ..prompts import get_prompt_from_github
 from ..util import *
 from missions import plugins
