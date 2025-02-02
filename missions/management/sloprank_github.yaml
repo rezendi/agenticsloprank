@@ -1,0 +1,26 @@
+mission: "SlopRank Repo Analysis"
+description: Analyze a GitHub repository and generate an insightful report
+base_llm: gpt-4o
+base_prompt: ""
+flags: { "repo_in_name": "true" }
+tasks: # repo/placeholder in URL is special-case, to be replaced with the actual repo
+  - readme:
+      category: API
+      base_url: https://github.com/repo/placeholder/README
+      report: key_context # this report will be used as context for all other reports
+  - commits:
+      category: API
+      base_url: https://github.com/repo/placeholder/commits
+      report: yes
+  - issues:
+      category: API
+      base_url: https://github.com/repo/placeholder/issues
+      report: yes
+  - pulls:
+      category: API
+      base_url: https://github.com/repo/placeholder/pulls
+      report: yes
+  - repo_analysis:
+      category: Agent Task
+      base_url: https://yamllms.ai/sloprank/assess
+      flags: { "max_iterations": 16 }

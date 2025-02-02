@@ -42,5 +42,8 @@ def get_prompt_from_github(key):
     repo = gh.get_repo(settings.GITHUB_PROMPTS_REPO)
     prompt = get_gh_file(repo, {"name": filename})
     cache_minutes = 1 if settings.DEBUG or settings.TESTING else 60
-    cache.set("prompt_%s" % filename, prompt, cache_minutes * 60)
+    try:
+        cache.set("prompt_%s" % filename, prompt, cache_minutes * 60)
+    except Exception as e:
+        log("Error caching prompt", e)
     return prompt
