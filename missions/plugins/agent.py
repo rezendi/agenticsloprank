@@ -71,17 +71,9 @@ def create_subsequent_task(task, iteration=0):
 def run_agent_final_report(task):
     tool_key = task.flags.get("tool_key")
     chat_llm(task, task.parent.response, tool_key=tool_key)
+    task.name = f"Final {task.name}"
     task.mark_complete()
-    return Task.objects.create(
-        name="Quantify Risks",
-        mission=task.mission,
-        order=task.order + 1,
-        visibility=task.visibility,
-        category=TaskCategory.QUANTIFIED_REPORT,
-        flags=task.flags,
-        parent=task,
-        url=QUANTIFY_RISK_URL,
-    )
+    return None
 
 
 def answer_agent(task):

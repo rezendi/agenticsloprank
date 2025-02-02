@@ -8,6 +8,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--template_id", help="Mission ID")
+        parser.add_argument("--add_quantify_risks", help="Add quantify risks")
 
     def handle(self, *args, **options):
         if options["template_id"]:
@@ -51,18 +52,19 @@ class Command(BaseCommand):
                     order=998,
                     base_url=ASSESS_RISK_URL,
                 )
-            quant = mission_info.taskinfo_set.filter(
-                base_url=QUANTIFY_RISK_URL,
-                category=TaskCategory.QUANTIFIED_REPORT,
-            ).first()
-            if not quant:
-                quant = TaskInfo.objects.create(
-                    mission_info=mission_info,
-                    name="Quantify risks",
-                    category=TaskCategory.QUANTIFIED_REPORT,
-                    parent=risks,
-                    order=999,
+            if options["add_quantify_risks"]:
+                quant = mission_info.taskinfo_set.filter(
                     base_url=QUANTIFY_RISK_URL,
-                )
+                    category=TaskCategory.QUANTIFIED_REPORT,
+                ).first()
+                if not quant:
+                    quant = TaskInfo.objects.create(
+                        mission_info=mission_info,
+                        name="Quantify risks",
+                        category=TaskCategory.QUANTIFIED_REPORT,
+                        parent=risks,
+                        order=999,
+                        base_url=QUANTIFY_RISK_URL,
+                    )
         else:
             pass
