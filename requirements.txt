@@ -9,6 +9,7 @@ Django==4.2.15
 django-cors-headers==4.4.0
 django-encrypted-model-fields==0.6.5
 django-permissions-policy==4.20.0
+django-pytest==4.9.0
 django-ratelimit==4.1.0
 django-rq==2.8.1
 django-sesame==3.2.2
