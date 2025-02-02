@@ -22,5 +22,5 @@ tasks: # repo/placeholder in URL is special-case, to be replaced with the actual
       report: yes
   - repo_analysis:
       category: Agent Task
-      base_url: https://yamllms.ai/sloprank/assess
+      base_url: https://yamllms.ai/risk/assess
       flags: { "max_iterations": 16 }
