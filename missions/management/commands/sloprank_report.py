@@ -30,14 +30,18 @@ class Command(BaseCommand):
         log("Reporting on", selected)
         mission_info = MissionInfo.objects.get(name=SLOPRANK_MISSION)
         mission = mission_info.create_mission()
+        if options["llm"]:
+            mission.llm = options["llm"]  # by default we use OpenAI if not set
+        mission.flags["github"] = selected
+        mission.save()
 
         # TODO get existing data and copy over
         copy_mission = None
         potential_copy_mission_ids = Mission.objects.filter(
-            "mission_info_id", mission_info.id
-        ).only("id")
-        for id in potential_copy_mission_ids:
-            mission = Mission.objects.get(id=id)
+            mission_info_id=mission_info.id, flags__github=selected
+        ).values("id")
+        for val in potential_copy_mission_ids:
+            mission = Mission.objects.get(id=val["id"])
             tasks = mission.task_set.filter(category=TaskCategory.API)
             if not tasks:
                 continue
@@ -47,11 +51,7 @@ class Command(BaseCommand):
                     viable_copy_mission = False
             if viable_copy_mission:
                 copy_mission = mission
-
-        if options["llm"]:
-            mission.llm = options["llm"]  # by default we use OpenAI if not set
-        mission.flags["github"] = selected
-        mission.save()
+                log("Found copy mission for raw data", copy_mission)
 
         fulfil_mission(mission.id, copy_mission)
         log("SlopRank report complete")
