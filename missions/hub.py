@@ -1,14 +1,16 @@
-from django_rq import job  # type: ignore
 import time
-from .models import *
-from .util import *
-from .plugins.text_links import *
+
+from django_rq import job  # type: ignore
+
 from .admin_jobs import evaluate_mission, evaluate_task
-from .run import run, get_customer_missions_since
+from .models import *
+from .plugins.text_links import *
+from .run import get_customer_missions_since, run
+from .util import *
 
 
 @job("default", timeout=6000)
-def fulfil_mission(mission_id):
+def fulfil_mission(mission_id, copy_mission=None):
     mission = Mission.objects.get(id=mission_id)
     log("Fulfilling mission", mission)
     mission_info = mission.mission_info
@@ -46,6 +48,14 @@ def fulfil_mission(mission_id):
                 task.parent = mission.task_set.filter(task_info_id=parent_id).first()
                 if data and not task.parent:
                     task.parent = data.task_set.filter(task_info_id=parent_id).first()
+            if task.category == TaskCategory.API and copy_mission:
+                original = copy_mission.task_set.filter(
+                    category=TaskCategory.API, url=task.url
+                ).first()
+                if original:
+                    task.response = original.response
+                    task.status = TaskStatus.COMPLETE
+                    task.save()
             task.save()
         log("Created base tasks", mission.task_set.all())
         for task in mission.task_set.all():
