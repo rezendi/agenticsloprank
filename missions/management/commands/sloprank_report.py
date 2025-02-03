@@ -1,3 +1,6 @@
+import csv
+import datetime
+
 from django.core.management.base import BaseCommand
 from django.db.models import CharField
 from django.db.models.functions import Lower
@@ -35,7 +38,6 @@ class Command(BaseCommand):
         mission.flags["github"] = selected
         mission.save()
 
-        # TODO get existing data and copy over
         copy_mission = None
         potential_copy_mission_ids = Mission.objects.filter(
             mission_info_id=mission_info.id, flags__github=selected
@@ -61,16 +63,27 @@ class Command(BaseCommand):
         prompt = get_prompt_from_github("risk-analysis")
 
         rows = []  # TODO gete from file arg
+        if options["file"]:
+            try:
+                with open(options["file"], "r", newline="", encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    rows.extend(reader)
+            except FileNotFoundError:
+                pass
         rows.append(
             {
                 "prompt": prompt,
                 "model": final_risk_report.get_llm(),
                 "response": final_risk_report.response,
                 "is_valid": True,
-                "response_time": "todo",
+                "response_time": datetime.datetime.utcnow().isoformat(),
                 "Answer_key": "n/a",
-                "token_count": "todo",
+                "token_count": len(final_risk_report.response or ""),
                 "error": None,
             }
         )
-        # write rows to same CSV file
+        with open(options["file"], "a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+            if f.tell() == 0:
+                writer.writeheader()
+            writer.writerows([rows[-1]])
