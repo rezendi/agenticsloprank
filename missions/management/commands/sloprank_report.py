@@ -45,15 +45,14 @@ class Command(BaseCommand):
         for val in potential_copy_mission_ids:
             mission = Mission.objects.get(id=val["id"])
             tasks = mission.task_set.filter(category=TaskCategory.API)
-            if not tasks:
-                continue
-            viable_copy_mission = True
+            viable_copy_mission = len(tasks) > 0
             for task in tasks:
                 if viable_copy_mission and not task.response:
                     viable_copy_mission = False
             if viable_copy_mission:
                 copy_mission = mission
                 log("Found copy mission for raw data", copy_mission)
+                break
 
         fulfil_mission(mission.id, copy_mission)
         log("SlopRank report complete")
