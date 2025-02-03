@@ -43,14 +43,14 @@ class Command(BaseCommand):
             mission_info_id=mission_info.id, flags__github=selected
         ).values("id")
         for val in potential_copy_mission_ids:
-            mission = Mission.objects.get(id=val["id"])
-            tasks = mission.task_set.filter(category=TaskCategory.API)
+            potential_copy_mission = Mission.objects.get(id=val["id"])
+            tasks = potential_copy_mission.task_set.filter(category=TaskCategory.API)
             viable_copy_mission = len(tasks) > 0
             for task in tasks:
                 if viable_copy_mission and not task.response:
                     viable_copy_mission = False
             if viable_copy_mission:
-                copy_mission = mission
+                copy_mission = potential_copy_mission
                 log("Found copy mission for raw data", copy_mission)
                 break
 

@@ -44,6 +44,6 @@ def get_prompt_from_github(key):
     cache_minutes = 1 if settings.DEBUG or settings.TESTING else 60
     try:
         cache.set("prompt_%s" % filename, prompt, cache_minutes * 60)
-    except Exception as e:
-        log("Error caching prompt", e)
+    except Exception:
+        log("Error caching prompt")
     return prompt
