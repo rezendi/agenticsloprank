@@ -59,17 +59,18 @@ class Command(BaseCommand):
         log("SlopRank report complete")
 
         log("Writing to CSV")
+        # this is v brittle, TODO get it by something other than name obvs
         final_risk_report = mission.task_set.filter(name="Final Risk Report").first()
         prompt = get_prompt_from_github("risk-analysis")
 
-        rows = []  # TODO gete from file arg
-        if options["file"]:
-            try:
-                with open(options["file"], "r", newline="", encoding="utf-8") as f:
-                    reader = csv.DictReader(f)
-                    rows.extend(reader)
-            except FileNotFoundError:
-                pass
+        rows = []
+        file = options["file"] if options["file"] else "sloprank.csv"
+        try:
+            with open(file, "r", newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                rows.extend(reader)
+        except FileNotFoundError:
+            pass
         rows.append(
             {
                 "prompt": prompt,
@@ -82,7 +83,7 @@ class Command(BaseCommand):
                 "error": None,
             }
         )
-        with open(options["file"], "a", newline="", encoding="utf-8") as f:
+        with open(file, "a", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=rows[0].keys())
             if f.tell() == 0:
                 writer.writeheader()
