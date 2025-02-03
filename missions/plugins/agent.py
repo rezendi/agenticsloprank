@@ -1,11 +1,14 @@
-import json, time
+import json
+import time
 from datetime import timedelta
-from .github import *
-from ..prompts import get_prompt_from_github
-from ..models import TaskCategory, Task, TaskStatus
-from ..util import *
-from missions.apps import get_plugin_manager
+
 from missions import plugins
+from missions.apps import get_plugin_manager
+
+from ..models import Task, TaskCategory, TaskStatus
+from ..prompts import get_prompt_from_github
+from ..util import *
+from .github import *
 
 MAX_AGENT_ITERATIONS = 16
 MAX_AGENT_FILES = 32
@@ -303,7 +306,6 @@ def assess_risk_agent(task):
     )
     task.save()
     chat_llm(task, data_to_analyze, tool_key="analyze_risks")
-    log("response", task.response)
     llm_response = json.loads(get_json_from(task.response))
 
     task.structured_data = {

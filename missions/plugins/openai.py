@@ -1,10 +1,14 @@
-import json, os, time
-from openai import OpenAI, AzureOpenAI
-from ..functions import get_openai_functions_for
-from ..util import get_sized_prompt, get_provider_llm, OPENAI_MODELS, AZURE_MODELS, log
+import json
+import os
+import time
+
+from openai import AzureOpenAI, OpenAI
+
 from missions import plugins
 from missions.models import TaskCategory
 
+from ..functions import get_openai_functions_for
+from ..util import AZURE_MODELS, OPENAI_MODELS, get_provider_llm, get_sized_prompt, log
 
 COMPLETED_STATUSES = ["completed", "failed", "cancelled", "expired"]
 
@@ -390,14 +394,13 @@ def set_up_assistant(mission):
 
     # create a new assistant if no ID in mission info or assistant fetch failed
     if not mission.get_assistant_id():
-
         log("Creating new assistant")
         tools = []
         if mission_info.flags.get("openai_tools") == "true":
             tools = [
                 {"type": "code_interpreter"},
                 # {"type": "retrieval"}, // enable later?
-            ] + get_openai_assistant_functions()
+            ]
         assistant = openai.beta.assistants.create(
             name=mission_info.name,
             instructions=mission_info.base_prompt,
@@ -442,6 +445,5 @@ def show_openai(task, input):
             ],
             max_tokens=300,
         )
-        log("response", response.choices[0].message.content)
         task.response += "\n\n[Input %s](%s):\n" % (idx, url)
         task.response += "%s" % response.choices[0].message.content

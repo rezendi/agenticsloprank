@@ -9,7 +9,7 @@ from missions.admin_jobs import get_random_repo
 from missions.hub import fulfil_mission
 from missions.models import Mission, MissionInfo, TaskCategory
 from missions.prompts import get_prompt_from_github
-from missions.util import log
+from missions.util import AGENT_REPORT_URL, log
 
 CharField.register_lookup(Lower, "lower")
 
@@ -59,12 +59,11 @@ class Command(BaseCommand):
         log("SlopRank report complete")
 
         log("Writing to CSV")
-        # this is v brittle, TODO get it by something other than name obvs
-        final_risk_report = mission.task_set.filter(name="Final Risk Report").first()
+        final_report = mission.task_set.filter(url=AGENT_REPORT_URL).first()
         prompt = get_prompt_from_github("risk-analysis")
 
         rows = []
-        file = options["file"] if options["file"] else "sloprank.csv"
+        file = options["file"] if options["file"] else "output/sloprank.csv"
         try:
             with open(file, "r", newline="", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
@@ -74,12 +73,12 @@ class Command(BaseCommand):
         rows.append(
             {
                 "prompt": prompt,
-                "model": final_risk_report.get_llm(),
-                "response": final_risk_report.response,
+                "model": final_report.get_llm(),
+                "response": final_report.response,
                 "is_valid": True,
                 "response_time": datetime.datetime.utcnow().isoformat(),
                 "Answer_key": "n/a",
-                "token_count": len(final_risk_report.response or ""),
+                "token_count": len(final_report.response or ""),
                 "error": None,
             }
         )

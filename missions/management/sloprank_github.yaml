@@ -11,16 +11,17 @@ tasks: # repo/placeholder in URL is special-case, to be replaced with the actual
   - commits:
       category: API
       base_url: https://github.com/repo/placeholder/commits
-      report: yes
+      report: no
   - issues:
       category: API
       base_url: https://github.com/repo/placeholder/issues
-      report: yes
+      report: no
   - pulls:
       category: API
       base_url: https://github.com/repo/placeholder/pulls
-      report: yes
+      report: no
   - repo_analysis:
       category: Agent Task
+      order: 10 # run after the others
       base_url: https://yamllms.ai/risk/assess
       flags: { "max_iterations": 16 }
