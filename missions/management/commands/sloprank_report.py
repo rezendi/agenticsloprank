@@ -1,5 +1,6 @@
 import csv
 import datetime
+import os
 
 from django.core.management.base import BaseCommand
 from django.db.models import CharField
@@ -44,6 +45,7 @@ class Command(BaseCommand):
         ).values("id")
         for val in potential_copy_mission_ids:
             potential_copy_mission = Mission.objects.get(id=val["id"])
+            log("Considering copy mission", potential_copy_mission)
             tasks = potential_copy_mission.task_set.filter(category=TaskCategory.API)
             viable_copy_mission = len(tasks) > 0
             for task in tasks:
@@ -63,6 +65,7 @@ class Command(BaseCommand):
 
         rows = []
         file = options["file"] if options["file"] else "output/sloprank.csv"
+        os.makedirs(os.path.dirname(file), exist_ok=True)
         try:
             with open(file, "r", newline="", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
@@ -75,10 +78,10 @@ class Command(BaseCommand):
                 "model": final_report.get_llm(),
                 "response": final_report.response,
                 "is_valid": True,
-                "response_time": datetime.datetime.utcnow().isoformat(),
+                "response_time": "n/a",
                 "Answer_key": "n/a",
-                "token_count": len(final_report.response or ""),
-                "error": None,
+                "token_count": "n/a",
+                "error": "n/a",
             }
         )
         with open(file, "a", newline="", encoding="utf-8") as f:
