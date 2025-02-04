@@ -94,6 +94,8 @@ CLAUDE_SONNET = "claude-3-5-sonnet-20240620"
 CLAUDE_HAIKU = "claude-3-haiku-20240307"
 CLAUDE_MODELS = [CLAUDE_OPUS, CLAUDE_SONNET, CLAUDE_HAIKU]
 
+DEEPSEEK_MODEL = "deepseek-reasoner"
+
 NEMOTRON_70B = "nvidia/llama-3.1-nemotron-70b-instruct"
 NEMOTRON_MODELS = [NEMOTRON_70B]
 
