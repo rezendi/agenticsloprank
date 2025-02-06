@@ -1,10 +1,13 @@
-import datetime, json, logging
+import datetime
+import json
+import logging
 from types import SimpleNamespace
+
+import stripe
+import tiktoken
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from google.generativeai.generative_models import GenerativeModel  # type: ignore
-import tiktoken
-import stripe
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +66,8 @@ GPT_4O = "gpt-4o-2024-08-06"
 GPT_4O_MINI = "gpt-4o-mini"
 O1_PREVIEW = "o1-preview"
 O1_MINI = "o1-mini"
+O1 = "o1"
+O3_MINI = "o3-mini"
 OPENAI_MODELS = [
     GPT_4_BASE,
     GPT_4O_BASE,
@@ -71,6 +76,8 @@ OPENAI_MODELS = [
     GPT_4O_MINI,
     O1_PREVIEW,
     O1_MINI,
+    O1,
+    O3_MINI,
 ]
 
 GPT_4O_AZURE = "gpt-4o-azure"
