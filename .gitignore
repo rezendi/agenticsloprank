@@ -39,3 +39,4 @@ makefile
 **.DS_Store**
 
 todo.txt
+output/sloprank.csv
