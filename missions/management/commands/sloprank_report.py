@@ -1,5 +1,4 @@
 import csv
-import datetime
 import os
 
 from django.core.management.base import BaseCommand
@@ -10,7 +9,7 @@ from missions.admin_jobs import get_random_repo
 from missions.hub import fulfil_mission
 from missions.models import Mission, MissionInfo, TaskCategory
 from missions.prompts import get_prompt_from_github
-from missions.util import AGENT_REPORT_URL, log
+from missions.util import AGENT_REPORT_URL, BASE_PREFIX, log
 
 CharField.register_lookup(Lower, "lower")
 
@@ -24,6 +23,10 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--repo", help="not a random report if you set the repo")
         parser.add_argument("--llm", help="llm to use")
+        parser.add_argument(
+            "--question",
+            help="question to use the agent (if blank, it returns a risk analysi)",
+        )
         parser.add_argument(
             "--file", help="CSV file to append to, for subsequent SlopRanking"
         )
@@ -39,7 +42,7 @@ class Command(BaseCommand):
         mission.flags["github"] = selected
         mission.save()
 
-        copy_mission = None
+        copy_mission_id = None
         potential_copy_mission_ids = Mission.objects.filter(
             mission_info_id=mission_info.id, flags__github=selected
         ).values("id")
@@ -58,11 +61,15 @@ class Command(BaseCommand):
                 if viable_copy_mission and not task.response:
                     viable_copy_mission = False
             if viable_copy_mission:
-                copy_mission = potential_copy_mission
-                log("Found copy mission for raw data", copy_mission)
+                copy_mission_id = potential_copy_mission.id
+                log("Found copy mission for raw data", copy_mission_id)
                 break
 
-        fulfil_mission(mission.id, copy_mission)
+        flags = {
+            "copy_mission_id": copy_mission_id,
+            "agent_question": options["question"],
+        }
+        fulfil_mission(mission.id, flags)
         log("SlopRank report complete")
 
         log("Writing to CSV")

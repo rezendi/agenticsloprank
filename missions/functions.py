@@ -224,9 +224,17 @@ def get_detective_report_tool():
                         "type": "string",
                         "description": "A brief explanation of why the next selected dataset may be important",
                     },
-                    "next_id": {
-                        "type": "number",
-                        "description": "The ID of the next dataset to analyze. You should not analyze the same dataset twice.",
+                    "next_data_type": {
+                        "type": "string",
+                        "description": "The type of the next data to fetch. This MUST be either 'file', 'dataset', or, if there seems to be no data left to fetch which seems likely to be important to your assessment, 'none'.",
+                    },
+                    "next_data_id": {
+                        "type": "string",
+                        "description": "The identifier of the next data to fetch. This MUST be either a dataset ID or a fully specified path to a file.",
+                    },
+                    "rationale": {
+                        "type": "string",
+                        "description": "A brief explanation of why this next data may be important.",
                     },
                     "estimated_significance": {
                         "type": "number",
@@ -243,7 +251,8 @@ def get_detective_report_tool():
                 },
                 "required": [
                     "dataset_assessment",
-                    "next_id",
+                    "next_data_type",
+                    "next_data_id",
                     "rationale",
                     "estimated_significance",
                     "overall_summary",
@@ -293,7 +302,7 @@ def get_analyze_risks_tool():
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "data_assessment": {
+                    "dataset_assessment": {
                         "type": "string",
                         "description": "Analysis of the current data, to be appended to your previous analysis. This analysis should inform assessments of the following risks: delivery, velocity, dependency, team, code quality, technical debt, test coverage, and error handling. This MUST be multiple paragraphs, but DO NOT mention any risks not addressed by this data. Be terse and concise, but also thorough, detailed, and quantitative, and data-driven - no yapping and no speculation, that comes later.",
                     },
@@ -311,7 +320,7 @@ def get_analyze_risks_tool():
                     },
                 },
                 "required": [
-                    "data_assessment",
+                    "dataset_assessment",
                     "next_data_type",
                     "next_data_id",
                     "rationale",

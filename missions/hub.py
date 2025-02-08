@@ -10,9 +10,9 @@ from .util import *
 
 
 @job("default", timeout=6000)
-def fulfil_mission(mission_id, copy_mission=None):
+def fulfil_mission(mission_id, flags={}):
     mission = Mission.objects.get(id=mission_id)
-    log("Fulfilling mission", mission)
+    log("Fulfilling mission", mission, "flags", flags)
     mission_info = mission.mission_info
 
     # for dev and 'generic' mission templates, we need to set the name
@@ -48,7 +48,8 @@ def fulfil_mission(mission_id, copy_mission=None):
                 task.parent = mission.task_set.filter(task_info_id=parent_id).first()
                 if data and not task.parent:
                     task.parent = data.task_set.filter(task_info_id=parent_id).first()
-            if task.category == TaskCategory.API and copy_mission:
+            if task.category == TaskCategory.API and flags.get("copy_mission_id"):
+                copy_mission = Mission.objects.get(id=flags["copy_mission_id"])
                 original = copy_mission.task_set.filter(
                     category=TaskCategory.API, url=task.url
                 ).first()
@@ -56,6 +57,10 @@ def fulfil_mission(mission_id, copy_mission=None):
                     task.response = original.response
                     task.status = TaskStatus.COMPLETE
                     task.save()
+            if task.category == TaskCategory.AGENT_TASK and flags.get("agent_question"):
+                log("Using agent question", flags["agent_question"])
+                task.url = BASE_PREFIX + "/agent"
+                task.flags["agent_question"] = flags["agent_question"]
             task.save()
         log("Created base tasks", mission.task_set.all())
         for task in mission.task_set.all():

@@ -11,7 +11,7 @@ from ..util import *
 from .github import *
 
 MAX_AGENT_ITERATIONS = 16
-MAX_AGENT_FILES = 32
+MAX_AGENT_FILES = 64
 
 
 @plugins.hookimpl
@@ -91,8 +91,8 @@ def answer_agent(task):
         return create_subsequent_task(task)
 
     today = datetime.datetime.now().date().strftime("%Y-%m-%d")
-    question = task.extras.get("agent_question")
-    last_question = task.extras.get("report_question") or question
+    question = task.flags.get("agent_question")
+    last_question = task.flags.get("report_question") or question
 
     # get all the previous datasets for this mission
     dataset_depth = task.flags.get("dataset_depth", 10)
@@ -144,12 +144,14 @@ def answer_agent(task):
     # TODO: look at the commits / PR data and add / replace with most recently edited files
     files = dep.structured_data.get("files", [])
     if not files:
+        files = ["No files available"]
+    if not files:
         log("listing files from repo", task.get_repo())
         repo = get_gh_repo(task)
         main = repo.get_branch(repo.default_branch)
         tree = repo.get_git_tree(main.commit.sha, recursive=True)
         paths = get_tree_paths(tree, max_files=2048)
-        # return the 32 largest files
+        # return the 64 largest files
         paths = sorted(paths, key=lambda x: x[1], reverse=True)[:MAX_AGENT_FILES]
         files = [p[0] for p in paths]
 
@@ -185,11 +187,11 @@ def answer_agent(task):
     # analyze the new data in light of the old data
     previous_tasks = [Task.objects.get(id=p) for p in previous_ids]
     today = datetime.datetime.now().date().strftime("%Y-%m-%d")
-    base_prompt = task.flags.get("base_prompt", "detective")
+    base_prompt = task.flags.get("base_prompt", "detective-2")
     base_prompt = get_prompt_from_github(base_prompt)
     task.prompt = base_prompt % (
         today,
-        max_iterations,
+        question if question else max_iterations,
         "- " + "\n- ".join([task_to_line_for_llm(t) for t in datasets]),
         "- " + "\n- ".join([f for f in files]),
         "- " + "\n- ".join([task_to_line_for_llm(t) for t in previous_tasks]),
@@ -218,7 +220,7 @@ def answer_agent(task):
     assessment = ""
     if data_to_analyze:
         assessment = "\n\n---\n\nAnalysis of %s:\n\n" % data_line
-        assessment += llm_response.get("data_assessment", "")
+        assessment += llm_response.get("dataset_assessment", "")
     task.response = analysis_so_far + assessment
     task.mark_complete()
 
@@ -235,7 +237,7 @@ def answer_agent(task):
     else:
         final_prompt = task.flags.get("final_prompt", "detective-report")
         report_prompt = get_prompt_from_github(final_prompt)
-        if final_prompt == "risk-assessmement":
+        if final_prompt == "risk-assessment":
             report_prompt = report_prompt % (
                 today,
                 "\n- ".join([task_to_line_for_llm(t) for t in previous_tasks]),
