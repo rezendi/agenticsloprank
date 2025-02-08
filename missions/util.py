@@ -97,9 +97,10 @@ MISTRAL_MODEL = "mistral-medium"
 MISTRAL_MODELS = [MISTRAL_MODEL]
 
 CLAUDE_OPUS = "claude-3-opus-20240229"
-CLAUDE_SONNET = "claude-3-5-sonnet-20240620"
-CLAUDE_HAIKU = "claude-3-haiku-20240307"
-CLAUDE_MODELS = [CLAUDE_OPUS, CLAUDE_SONNET, CLAUDE_HAIKU]
+CLAUDE_SONNET = "claude-3-5-sonnet-20241022"
+CLAUDE_HAIKU = "claude-3-5-haiku-20241022"
+CLAUDE_HAIKU_LATEST = "claude-3-5-haiku-latest"
+CLAUDE_MODELS = [CLAUDE_OPUS, CLAUDE_SONNET, CLAUDE_HAIKU, CLAUDE_HAIKU_LATEST]
 
 NEMOTRON_70B = "nvidia/llama-3.1-nemotron-70b-instruct"
 NEMOTRON_MODELS = [NEMOTRON_70B]
@@ -786,7 +787,11 @@ def get_json_from(response_text):
     if response_text.find("```json") > -1:
         return response_text.split("```json")[1].split("```")[0]
     if response_text.find("```") > -1:
-        return response_text.split("```")[1]
+        return response_text.split("```")[1].split("```")[0]
+    if response_text and response_text[0] not in "{[":
+        response_text = response_text[response_text.index("{") :]
+    if response_text and response_text[-1] not in "}]":
+        response_text = response_text[: response_text.rindex("}")]
     return response_text
 
 

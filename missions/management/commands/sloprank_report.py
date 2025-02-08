@@ -76,7 +76,9 @@ class Command(BaseCommand):
         final_report = mission.task_set.filter(url=AGENT_REPORT_URL).first()
         if not final_report:
             raise Exception("Unable to generate final agent report")
-        prompt = get_prompt_from_github("risk-analysis")
+        prompt = get_prompt_from_github(
+            "detective-report" if options["question"] else "risk-analysis"
+        )
 
         rows = []
         file = options["file"] if options["file"] else "output/sloprank.csv"

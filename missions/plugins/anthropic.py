@@ -78,7 +78,7 @@ def chat_claude_json(task, input, tool_key):
         tool_prompt = "\n<OutputFormat/>"
         tool_prompt += "\nYour response MUST be in the form of a JSON object which exactly matches the following OpenAI Structured Output definition:\n"
         tool_prompt += "\n%s\n" % tools[0]
-        tool_prompt = "\nAgain it MUST consist entirely of such a JSON object with no wrapper, prologue, epilogue, or other description.\n"
+        tool_prompt = "\nAgain it MUST consist entirely of such a JSON object with no wrapper, prologue, epilogue, or other description. Do not nest keys; it MUST be a flat dictionary.\n"
         tool_prompt = "\n</OutputFormat/>"
         final_prompt += tool_prompt
 

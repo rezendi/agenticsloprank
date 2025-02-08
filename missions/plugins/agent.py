@@ -27,6 +27,7 @@ def run_agent(task):
         next_task = answer_agent(task)
     else:  # generic agent
         next_task = answer_agent(task)
+        task.flags["tool_key"] = "detective_report"
 
     if next_task:
         next_task.status = TaskStatus.IN_PROCESS
@@ -143,8 +144,8 @@ def answer_agent(task):
 
     # TODO: look at the commits / PR data and add / replace with most recently edited files
     files = dep.structured_data.get("files", [])
-    if not files:
-        files = ["No files available"]
+    # if not files:
+    #     files = ["No files available"]
     if not files:
         log("listing files from repo", task.get_repo())
         repo = get_gh_repo(task)
@@ -203,16 +204,19 @@ def answer_agent(task):
     chat_llm(
         task, data_to_analyze, tool_key=task.flags.get("tool_key", "detective_report")
     )
-    llm_response = json.loads(get_json_from(task.response))
+    response_json = get_json_from(task.response)
+    llm_response = json.loads(response_json)
+    next_data_id = llm_response.get("next_data_id", llm_response.get("next_dataset_id"))
+    next_data_type = llm_response.get("next_data_type", "task")
 
     task.structured_data = {
+        "next_data_id": next_data_id,
         "response": llm_response,
         "previous_sources": new_previous_ids,
         "previous_files": new_previous_files,
         "data_type": data_type,
         "data_id": data_id,
-        "next_data_type": llm_response.get("next_data_type"),
-        "next_data_id": llm_response.get("next_data_id"),
+        "next_data_type": next_data_type,
         "files": files,
     }
 
@@ -220,7 +224,10 @@ def answer_agent(task):
     assessment = ""
     if data_to_analyze:
         assessment = "\n\n---\n\nAnalysis of %s:\n\n" % data_line
-        assessment += llm_response.get("dataset_assessment", "")
+        assessment += llm_response.get(
+            "dataset_assessment",
+            llm_response.get("dataset_summary", llm_response.get("summary", "")),
+        )
     task.response = analysis_so_far + assessment
     task.mark_complete()
 
@@ -228,11 +235,8 @@ def answer_agent(task):
     if "Iteration" in task.name:
         next_iteration = 1 + int(task.name.split("Iteration")[1].strip())
 
-    go_on = (
-        next_iteration <= max_iterations
-        and llm_response.get("next_data_type") != "none"
-    )
-    if go_on and llm_response.get("next_data_id"):
+    go_on = next_iteration <= max_iterations and next_data_type != "none"
+    if go_on and next_data_id:
         return create_subsequent_task(task, iteration=next_iteration)
     else:
         final_prompt = task.flags.get("final_prompt", "detective-report")
