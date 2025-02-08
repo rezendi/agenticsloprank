@@ -78,7 +78,7 @@ def create_subsequent_task(task, iteration=0):
 
 def run_agent_final_report(task):
     tool_key = task.flags.get("tool_key")
-    chat_llm(task, task.parent.response, tool_key=tool_key)
+    task.response = chat_llm(task, task.parent.response, tool_key=tool_key)
     task.name = f"Final {task.name}"
     task.mark_complete()
     return None
@@ -144,8 +144,8 @@ def answer_agent(task):
 
     # TODO: look at the commits / PR data and add / replace with most recently edited files
     files = dep.structured_data.get("files", [])
-    # if not files:
-    #     files = ["No files available"]
+    if not files:
+        files = ["No files available"]
     if not files:
         log("listing files from repo", task.get_repo())
         repo = get_gh_repo(task)
@@ -201,7 +201,7 @@ def answer_agent(task):
         data_line,
     )
     task.save()
-    chat_llm(
+    task.response = chat_llm(
         task, data_to_analyze, tool_key=task.flags.get("tool_key", "detective_report")
     )
     response_json = get_json_from(task.response)
@@ -325,7 +325,7 @@ def assess_prs(task):
         else:
             prompt = get_prompt_from_github("rate-pr")
             task.prompt = prompt % pr
-        chat_llm(task, diff, tool_key="perform_rating")
+        task.response = chat_llm(task, diff, tool_key="perform_rating")
         rating = json.loads(get_json_from(task.response))
         pr = [p for p in to_assess if p["number"] == number][0]
         rating["pr"] = pr
@@ -355,7 +355,7 @@ def get_issue_info_for(task, pr, number, issue_data):
         llm=GPT_4O_MINI,
     )
     temp.prompt = get_prompt_from_github("identify-issue") % pr
-    chat_llm(temp, issue_data, tool_key="identify_issue")
+    task.response = chat_llm(temp, issue_data, tool_key="identify_issue")
     response = temp.response
     try:
         temp.delete()
