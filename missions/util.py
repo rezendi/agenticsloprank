@@ -781,11 +781,6 @@ def correct_name(mission):
     return name
 
 
-def task_to_line_for_llm(task):
-    when = task.created_at.strftime("%Y-%m-%d")
-    return "ID %s - %s on %s " % (task.id, task.name, when)
-
-
 def get_json_from(response_text):
     response_text = response_text or ""
     if response_text.find("```json") > -1:
