@@ -10,8 +10,8 @@ from ..prompts import get_prompt_from_github
 from ..util import *
 from .github import *
 
-MAX_AGENT_ITERATIONS = 16
-MAX_AGENT_FILES = 64
+MAX_AGENT_ITERATIONS = 8
+MAX_AGENT_FILES = 32
 
 
 @plugins.hookimpl
