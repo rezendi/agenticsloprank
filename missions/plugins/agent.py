@@ -107,7 +107,7 @@ def answer_agent(task):
     # fetches only
     exclude = task.flags.get("exclude_categories", "default")
     if exclude == "agent":
-        exclude = TaskCategory.AGENT_TASK
+        valid_categories = [TaskCategory.AGENT_TASK]
     else:
         valid_categories = [
             TaskCategory.API,

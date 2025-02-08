@@ -46,7 +46,13 @@ class Command(BaseCommand):
         for val in potential_copy_mission_ids:
             potential_copy_mission = Mission.objects.get(id=val["id"])
             log("Considering copy mission", potential_copy_mission)
-            tasks = potential_copy_mission.task_set.filter(category=TaskCategory.API)
+            tasks = potential_copy_mission.task_set.filter(
+                category__in=[
+                    TaskCategory.API,
+                    TaskCategory.FETCH_FOR_LLM,
+                    TaskCategory.SCRAPE,
+                ]
+            )
             viable_copy_mission = len(tasks) > 0
             for task in tasks:
                 if viable_copy_mission and not task.response:
@@ -61,6 +67,8 @@ class Command(BaseCommand):
 
         log("Writing to CSV")
         final_report = mission.task_set.filter(url=AGENT_REPORT_URL).first()
+        if not final_report:
+            raise Exception("Unable to generate final agent report")
         prompt = get_prompt_from_github("risk-analysis")
 
         rows = []
