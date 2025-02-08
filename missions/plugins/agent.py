@@ -144,8 +144,8 @@ def answer_agent(task):
 
     # TODO: look at the commits / PR data and add / replace with most recently edited files
     files = dep.structured_data.get("files", [])
-    if not files:
-        files = ["No files available"]
+    # if not files:
+    #     files = ["No files available"]
     if not files:
         log("listing files from repo", task.get_repo())
         repo = get_gh_repo(task)
