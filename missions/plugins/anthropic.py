@@ -1,7 +1,11 @@
 import os
+
 from anthropic import Anthropic
-from ..util import *
+
 from missions import plugins
+
+from ..functions import get_openai_functions_for
+from ..util import *
 
 # https://cloud.google.com/docs/authentication/provide-credentials-adc#how-to
 
@@ -69,6 +73,15 @@ def chat_claude_json(task, input, tool_key):
         + sized_input
         + "\n</Information>\n"
     )
+    if tool_key:
+        tools = get_openai_functions_for(tool_key)
+        tool_prompt = "\n<OutputFormat/>"
+        tool_prompt += "\nYour response MUST be in the form of a JSON object which exactly matches the following OpenAI Structured Output definition:\n"
+        tool_prompt += "\n%s\n" % tools[0]
+        tool_prompt = "\nAgain it MUST consist entirely of such a JSON object with no wrapper, prologue, epilogue, or other description.\n"
+        tool_prompt = "\n</OutputFormat/>"
+        final_prompt += tool_prompt
+
     task.extras["task_prompt"] = task_prompt
     task.extras["final_prompt"] = final_prompt
     log("final JSON prompt length", len(final_prompt))
