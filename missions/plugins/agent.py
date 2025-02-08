@@ -185,7 +185,7 @@ def answer_agent(task):
     # analyze the new data in light of the old data
     previous_tasks = [Task.objects.get(id=p) for p in previous_ids]
     today = datetime.datetime.now().date().strftime("%Y-%m-%d")
-    base_prompt = task.flags.get("base_prompt", "detective-2")
+    base_prompt = task.flags.get("base_prompt", "detective")
     base_prompt = get_prompt_from_github(base_prompt)
     task.prompt = base_prompt % (
         today,
@@ -198,7 +198,9 @@ def answer_agent(task):
         data_line,
     )
     task.save()
-    chat_llm(task, data_to_analyze, tool_key=task.flags.get("tool_key"))
+    chat_llm(
+        task, data_to_analyze, tool_key=task.flags.get("tool_key", "detective_report")
+    )
     llm_response = json.loads(get_json_from(task.response))
 
     task.structured_data = {
