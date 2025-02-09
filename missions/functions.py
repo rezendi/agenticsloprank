@@ -232,10 +232,6 @@ def get_detective_report_tool():
                         "type": "string",
                         "description": "The identifier of the next data to fetch. This MUST be either a dataset ID or a fully specified path to a file.",
                     },
-                    "rationale": {
-                        "type": "string",
-                        "description": "A brief explanation of why this next data may be important.",
-                    },
                     "estimated_significance": {
                         "type": "number",
                         "description": "The estimated significance of the next dataset, from 1 to 5",

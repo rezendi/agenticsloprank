@@ -98,9 +98,16 @@ MISTRAL_MODELS = [MISTRAL_MODEL]
 
 CLAUDE_OPUS = "claude-3-opus-20240229"
 CLAUDE_SONNET = "claude-3-5-sonnet-20241022"
+CLAUDE_SONNET_LATEST = "claude-3-5-sonnet-latest"
 CLAUDE_HAIKU = "claude-3-5-haiku-20241022"
 CLAUDE_HAIKU_LATEST = "claude-3-5-haiku-latest"
-CLAUDE_MODELS = [CLAUDE_OPUS, CLAUDE_SONNET, CLAUDE_HAIKU, CLAUDE_HAIKU_LATEST]
+CLAUDE_MODELS = [
+    CLAUDE_OPUS,
+    CLAUDE_SONNET,
+    CLAUDE_HAIKU,
+    CLAUDE_HAIKU_LATEST,
+    CLAUDE_SONNET_LATEST,
+]
 
 NEMOTRON_70B = "nvidia/llama-3.1-nemotron-70b-instruct"
 NEMOTRON_MODELS = [NEMOTRON_70B]
@@ -126,8 +133,10 @@ TOKEN_LIMITS = {
     GEMINI_1_5_FLASH: 1000000,
     GEMINI_1_5_PRO: 1000000,
     CLAUDE_SONNET: 192000,
+    CLAUDE_SONNET_LATEST: 192000,
     CLAUDE_OPUS: 192000,
     CLAUDE_HAIKU: 192000,
+    CLAUDE_HAIKU_LATEST: 192000,
     NEMOTRON_70B: 120000,
 }
 MAX_THREADED_MSG_LENGTH = 28768  # actually 32K but we want to be safe and not have one message overwhelm the context
@@ -784,10 +793,14 @@ def correct_name(mission):
 
 def get_json_from(response_text):
     response_text = response_text or ""
+    if response_text.find("<output>") > -1:
+        return response_text.split("<output>")[1].split("</output>")[0].strip()
+    if response_text.find("<result>") > -1:
+        return response_text.split("<output>")[1].split("</result>")[0].strip()
     if response_text.find("```json") > -1:
-        return response_text.split("```json")[1].split("```")[0]
+        return response_text.split("```json")[1].split("```")[0].strip()
     if response_text.find("```") > -1:
-        return response_text.split("```")[1].split("```")[0]
+        return response_text.split("```")[1].split("```")[0].strip()
     if response_text and response_text[0] not in "{[":
         response_text = response_text[response_text.index("{") :]
     if response_text and response_text[-1] not in "}]":
