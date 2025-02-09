@@ -140,9 +140,7 @@ def answer_agent(task):
     datasets = [t for t in datasets if t.id not in previous_ids]
     previous_files = dep.structured_data.get("previous_files", [])
     max_iterations = task.flags.get("max_iterations", MAX_AGENT_ITERATIONS)
-    analysis_so_far = dep.structured_data.get("response", {}).get(
-        "summary", "No analysis yet"
-    )
+    analysis_so_far = dep.response if dep and dep.response else "No analysis yet"
 
     # TODO: look at the commits / PR data and add / replace with most recently edited files
     files = dep.structured_data.get("files", [])
