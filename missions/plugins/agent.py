@@ -77,8 +77,7 @@ def create_subsequent_task(task, iteration=0):
 
 
 def run_agent_final_report(task):
-    tool_key = task.flags.get("tool_key")
-    task.response = chat_llm(task, task.parent.response, tool_key=tool_key)
+    task.response = chat_llm(task, task.parent.response, tool_key=None)
     task.name = f"Final {task.name}"
     task.mark_complete()
     return None
