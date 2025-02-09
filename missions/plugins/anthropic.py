@@ -81,8 +81,8 @@ def chat_claude_json(task, input, tool_key):
         )
         example_json = generate_example_json(tools[0])
         tool_prompt += "\n```json\n%s\n```\n" % example_json
-        tool_prompt = "\nNote that all of those fields are mandatory and must be followed exactly.\n"
-        tool_prompt = "\n</OutputFormat/>"
+        tool_prompt += "\nNote that all of those fields are mandatory and must be followed exactly.\n"
+        tool_prompt += "\n</OutputFormat/>"
         final_prompt += tool_prompt
 
     task.extras["task_prompt"] = task_prompt
@@ -109,6 +109,7 @@ def generate_example(schema, key_name=None):
     Recursively generate an example value based on a JSON schema.
     """
     schema_type = schema.get("type")
+    schema_description = schema.get("description", "")
 
     if schema_type == "object":
         example = {}
@@ -129,7 +130,7 @@ def generate_example(schema, key_name=None):
         # You might customize this based on the key or description.
         # For instance, if the description hints at a multi-paragraph text,
         # you could provide a longer example.
-        return f"example {key_name}" if key_name else "example string"
+        return schema_description if schema_description else "example"
 
     elif schema_type == "number":
         desc = schema.get("description", "").lower()

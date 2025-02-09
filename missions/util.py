@@ -802,10 +802,23 @@ def get_json_from(response_text):
     if response_text.find("```") > -1:
         return response_text.split("```")[1].split("```")[0].strip()
     if response_text and response_text[0] not in "{[":
-        response_text = response_text[response_text.index("{") :]
-    if response_text and response_text[-1] not in "}]":
-        response_text = response_text[: response_text.rindex("}")]
+        extracted = extract_first_json(response_text)
+        return extracted or response_text
     return response_text
+
+
+def extract_first_json(text):
+    decoder = json.JSONDecoder()
+    for i, char in enumerate(text):
+        if char in "{[":
+            try:
+                # Attempt to decode a JSON blob starting at this index.
+                obj, _ = decoder.raw_decode(text[i:])
+                return obj
+            except json.JSONDecodeError:
+                # Not valid JSON at this position, keep scanning.
+                continue
+    return None  # No valid JSON blob found.
 
 
 def get_json_from_raw(raw, array_expected=False):

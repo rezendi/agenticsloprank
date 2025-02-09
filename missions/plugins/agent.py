@@ -140,7 +140,9 @@ def answer_agent(task):
     datasets = [t for t in datasets if t.id not in previous_ids]
     previous_files = dep.structured_data.get("previous_files", [])
     max_iterations = task.flags.get("max_iterations", MAX_AGENT_ITERATIONS)
-    analysis_so_far = dep.response or "" if dep else "No analysis yet"
+    analysis_so_far = dep.structured_data.get("response", {}).get(
+        "summary", "No analysis yet"
+    )
 
     # TODO: look at the commits / PR data and add / replace with most recently edited files
     files = dep.structured_data.get("files", [])
@@ -167,14 +169,7 @@ def answer_agent(task):
     new_previous_files = previous_files
 
     if data_id:
-        if data_type == "dataset" or data_type == "task":
-            log("Fetching task", data_id)
-            task_id = int(data_id)
-            data_task = Task.objects.get(id=task_id)
-            data_to_analyze = data_task.response
-            new_previous_ids = previous_ids + [data_id]
-            data_line = task_to_line_for_llm(data_task)
-        elif data_type == "file":
+        if data_type == "file":
             log("Fetching file", data_id)
             repo = get_gh_repo(task)
             try:
@@ -184,6 +179,16 @@ def answer_agent(task):
                 log("Error fetching file", data_id, e)
             new_previous_files = previous_files + [data_id]
             data_line = data_id
+        else:
+            log("Fetching task", data_id)
+            task_id = int(data_id)
+            data_task = Task.objects.get(id=task_id)
+            data_to_analyze = data_task.response
+            new_previous_ids = previous_ids + [data_id]
+            data_line = task_to_line_for_llm(data_task)
+        log("data to analyze length", len(data_to_analyze))
+    else:
+        log("No data ID to fetch from", dep, dep.structured_data)
 
     # analyze the new data in light of the old data
     previous_tasks = [Task.objects.get(id=p) for p in previous_ids]
@@ -201,12 +206,27 @@ def answer_agent(task):
         data_line,
     )
     task.save()
-    task.response = chat_llm(
-        task, data_to_analyze, tool_key=task.flags.get("tool_key", "detective_report")
+    attempts = 0
+    while attempts < 3:
+        attempts += 1  # try again
+        try:
+            task.response = chat_llm(
+                task,
+                data_to_analyze,
+                tool_key=task.flags.get("tool_key", "detective_report"),
+            )
+            response_json = get_json_from(task.response)
+            llm_response = json.loads(response_json)
+            attempts = 3  # exit loop
+        except Exception as ex:
+            log("Error parsing JSON from LLM", ex, task.response)
+            if attempts < 3:
+                log("Retrying...")
+
+    next_data_id = llm_response.get(
+        "next_data_id",
+        llm_response.get("next_dataset_id", llm_response.get("dataset_id", "")),
     )
-    response_json = get_json_from(task.response)
-    llm_response = json.loads(response_json)
-    next_data_id = llm_response.get("next_data_id", llm_response.get("next_dataset_id"))
     next_data_type = llm_response.get("next_data_type", "task")
 
     task.structured_data = {
