@@ -10,7 +10,7 @@ from ..prompts import get_prompt_from_github
 from ..util import *
 from .github import *
 
-MAX_AGENT_ITERATIONS = 16
+MAX_AGENT_ITERATIONS = 8
 MAX_AGENT_FILES = 32
 
 
@@ -20,9 +20,14 @@ def run_agent(task):
     if url == AGENT_REPORT_URL:
         next_task = run_agent_final_report(task)
     elif url.startswith(ASSESS_RISK_URL):
-        next_task = assess_risk_agent(task)
+        task.flags["exclude_categories"] = "agent"
+        task.flags["base_prompt"] = "risk-analysis"
+        task.flags["final_prompt"] = "risk-assessment"
+        task.flags["tool_key"] = "analyze_risks"
+        next_task = answer_agent(task)
     else:  # generic agent
         next_task = answer_agent(task)
+        task.flags["tool_key"] = "detective_report"
 
     if next_task:
         next_task.status = TaskStatus.IN_PROCESS
@@ -72,8 +77,7 @@ def create_subsequent_task(task, iteration=0):
 
 
 def run_agent_final_report(task):
-    tool_key = task.flags.get("tool_key")
-    chat_llm(task, task.parent.response, tool_key=tool_key)
+    task.response = chat_llm(task, task.parent.response, tool_key=None)
     task.name = f"Final {task.name}"
     task.mark_complete()
     return None
@@ -85,9 +89,10 @@ def answer_agent(task):
     if not dep:  # initial task
         task.mark_complete()
         return create_subsequent_task(task)
+
     today = datetime.datetime.now().date().strftime("%Y-%m-%d")
-    question = task.extras.get("agent_question")
-    last_question = task.extras.get("report_question") or question
+    question = task.flags.get("agent_question")
+    last_question = task.flags.get("report_question") or question
 
     # get all the previous datasets for this mission
     dataset_depth = task.flags.get("dataset_depth", 10)
@@ -100,11 +105,15 @@ def answer_agent(task):
         depth += 1
 
     # fetches only
-    valid_categories = [
-        TaskCategory.API,
-        TaskCategory.SCRAPE,
-        TaskCategory.FILTER,
-    ]
+    exclude = task.flags.get("exclude_categories", "default")
+    if exclude == "agent":
+        valid_categories = [TaskCategory.AGENT_TASK]
+    else:
+        valid_categories = [
+            TaskCategory.API,
+            TaskCategory.SCRAPE,
+            TaskCategory.FILTER,
+        ]
     if task.flags.get("include_quantified"):
         valid_categories.append(TaskCategory.QUANTIFIED_REPORT)
     datasets = [t for t in tasks if t.category in valid_categories]
@@ -125,141 +134,27 @@ def answer_agent(task):
             tools.add(source["name"])
 
     # previous analysis
-    previous_ids = dep.structured_data.get("previous_ids", []) if dep else []
+    previous_ids = dep.structured_data.get("previous_sources", []) if dep else []
     previous_tasks = [Task.objects.get(id=p) for p in previous_ids]
     datasets = [t for t in datasets if t.id not in previous_ids]
-    analysis_so_far = dep.response or "" if dep else "No analysis yet"
-
-    # current data to analyze
-    data_task_id = dep.structured_data.get("next_id") if dep else None
-    data_task = Task.objects.get(id=data_task_id) if data_task_id else None
-    data_to_analyze = data_task.response if data_task else None
-
-    base_prompt = task.flags.get("base_prompt", "detective")
-    base_prompt = get_prompt_from_github(base_prompt)
-    task.prompt = base_prompt % (
-        today,
-        question,
-        "- " + "\n- ".join(sorted(list(tools))),
-        "- " + "\n- ".join([task_to_line_for_llm(t) for t in datasets]),
-        "- " + "\n- ".join([task_to_line_for_llm(t) for t in previous_tasks]),
-        analysis_so_far or "None yet",
-        task_to_line_for_llm(data_task) if data_task else "None yet",
-    )
-    chat_llm(task, data_to_analyze, tool_key="detective_report")
-
-    retval = json.loads(get_json_from(task.response))
-    if isinstance(retval, dict) and len(retval) == 1:
-        # sometimes we get a dict with a single key, unwrap it
-        sole_key = list(retval.keys())[0]
-        new_retval = retval[sole_key]
-        if isinstance(new_retval, dict) and len(new_retval) > 1:
-            log("Unwrapping dict", sole_key)
-            retval = new_retval
-
-    new_previous_ids = previous_ids + [data_task_id] if data_task_id else previous_ids
-    task.structured_data = {
-        "response": retval,
-        "previous_ids": new_previous_ids,
-        "this_id": data_task_id,
-        "next_id": retval.get("next_id"),
-    }
-
-    analysis_so_far = "" if analysis_so_far == "No analysis yet" else analysis_so_far
-    assessment = ""
-    new_assessment = ""
-    if data_to_analyze:
-        assessment = "\n\n---\n\n"
-        assessment += "Analysis of %s:\n\n" % task_to_line_for_llm(data_task)
-        new_assessment = retval.get("dataset_assessment", "")
-        if not new_assessment:
-            for key in retval.keys():
-                if key.startswith("dataset") or key.startswith("assessment"):
-                    new_assessment = "%s" % retval[key]
-                    break
-        assessment += new_assessment
-    task.response = analysis_so_far + assessment
-    task.save()
-
-    consider_rerun = (
-        data_task
-        and task.flags.get("rerun_agent_tasks") == "true"
-        and ("estimated_significance" not in retval or not new_assessment)
-    )
-    if consider_rerun and task.extras.get("reruns", 0) <= 3:
-        task.extras["reruns"] = task.extras.get("reruns", 0) + 1
-        task.status = TaskStatus.IN_PROCESS
-        task.save()
-        log("No estimated significance, trying rerun", task.extras["reruns"])
-        return task
-
-    task.mark_complete()
-    task.extras.pop("reruns", None)
-    next_iteration = 1
-    if "Iteration" in task.name:
-        next_iteration = 1 + int(task.name.split("Iteration")[1].strip())
-
-    max_iterations = task.flags.get("max_iterations", MAX_AGENT_ITERATIONS)
-    if (
-        next_iteration <= max_iterations
-        and int(retval.get("estimated_significance", 0)) >= 3
-    ):
-        return create_subsequent_task(task, iteration=next_iteration)
-    else:
-        report_prompt = get_prompt_from_github("detective-report")
-        report_prompt = report_prompt % (
-            today,
-            last_question,
-            "\n- ".join([task_to_line_for_llm(t) for t in previous_tasks]),
-        )
-        report_name = task.name.split(" Iteration")[0]
-        report_name = report_name.replace("Detective", "Report")
-        report_name = report_name.replace("Agent", "Report")
-        agent_report = create_subsequent_task(task)
-        agent_report.url = AGENT_REPORT_URL
-        agent_report.prompt = report_prompt
-        agent_report.name = report_name or "Agent Report"
-        agent_report.save()
-        return agent_report
-
-
-def assess_risk_agent(task):
-    log("Running recursive risk assessment task", task)
-    dep = task.parent
-    if not dep:  # initial task
-        task.mark_complete()
-        return create_subsequent_task(task)
-
-    dataset_mission_ids = [task.mission.id]
-    if task.mission.previous:
-        dataset_mission_ids.append(task.mission.previous.id)
-    datasets = Task.objects.filter(mission_id__in=dataset_mission_ids)
-
-    # filter out any tasks that are not helpful, e.g. agent analyses
-    datasets = datasets.exclude(category=TaskCategory.AGENT_TASK)
-
-    # previous analysis
-    previous_ids = dep.structured_data.get("previous_sources", [])
-    datasets = datasets.exclude(id__in=previous_ids).only("id", "name", "created_at")
-
-    # other current state
     previous_files = dep.structured_data.get("previous_files", [])
     max_iterations = task.flags.get("max_iterations", MAX_AGENT_ITERATIONS)
-    analysis_so_far = dep.response or ""
+    analysis_so_far = dep.response if dep and dep.response else "No analysis yet"
 
     # TODO: look at the commits / PR data and add / replace with most recently edited files
     files = dep.structured_data.get("files", [])
+    # if not files:
+    #     files = ["No files available"]
     if not files:
         log("listing files from repo", task.get_repo())
         repo = get_gh_repo(task)
         main = repo.get_branch(repo.default_branch)
         tree = repo.get_git_tree(main.commit.sha, recursive=True)
         paths = get_tree_paths(tree, max_files=2048)
-        # return the 32 largest files
+        # return the 64 largest files
         paths = sorted(paths, key=lambda x: x[1], reverse=True)[:MAX_AGENT_FILES]
         files = [p[0] for p in paths]
 
-    # current data to analyze
     data_type = dep.structured_data.get("next_data_type", "task")
     data_id = dep.structured_data.get("next_data_id", "")
     if isinstance(data_id, str):
@@ -271,14 +166,7 @@ def assess_risk_agent(task):
     new_previous_files = previous_files
 
     if data_id:
-        if data_type == "dataset" or data_type == "task":
-            log("Fetching task", data_id)
-            task_id = int(data_id)
-            data_task = Task.objects.get(id=task_id)
-            data_to_analyze = data_task.response
-            new_previous_ids = previous_ids + [data_id]
-            data_line = task_to_line_for_llm(data_task)
-        elif data_type == "file":
+        if data_type == "file":
             log("Fetching file", data_id)
             repo = get_gh_repo(task)
             try:
@@ -288,15 +176,25 @@ def assess_risk_agent(task):
                 log("Error fetching file", data_id, e)
             new_previous_files = previous_files + [data_id]
             data_line = data_id
+        else:
+            log("Fetching task", data_id)
+            task_id = int(data_id)
+            data_task = Task.objects.get(id=task_id)
+            data_to_analyze = data_task.response
+            new_previous_ids = previous_ids + [data_id]
+            data_line = task_to_line_for_llm(data_task)
+        log("data to analyze length", len(data_to_analyze))
+    else:
+        log("No data ID to fetch from", dep, dep.structured_data)
 
     # analyze the new data in light of the old data
     previous_tasks = [Task.objects.get(id=p) for p in previous_ids]
     today = datetime.datetime.now().date().strftime("%Y-%m-%d")
-    base_prompt = task.flags.get("base_prompt", "risk-analysis")
+    base_prompt = task.flags.get("base_prompt", "detective-2")
     base_prompt = get_prompt_from_github(base_prompt)
     task.prompt = base_prompt % (
         today,
-        max_iterations,
+        question if question else max_iterations,
         "- " + "\n- ".join([task_to_line_for_llm(t) for t in datasets]),
         "- " + "\n- ".join([f for f in files]),
         "- " + "\n- ".join([task_to_line_for_llm(t) for t in previous_tasks]),
@@ -305,17 +203,37 @@ def assess_risk_agent(task):
         data_line,
     )
     task.save()
-    chat_llm(task, data_to_analyze, tool_key="analyze_risks")
-    llm_response = json.loads(get_json_from(task.response))
+    attempts = 0
+    while attempts < 3:
+        attempts += 1  # try again
+        try:
+            task.response = chat_llm(
+                task,
+                data_to_analyze,
+                tool_key=task.flags.get("tool_key", "detective_report"),
+            )
+            response_json = get_json_from(task.response)
+            llm_response = json.loads(response_json)
+            attempts = 3  # exit loop
+        except Exception as ex:
+            log("Error parsing JSON from LLM", ex, task.response)
+            if attempts < 3:
+                log("Retrying...")
+
+    next_data_id = llm_response.get(
+        "next_data_id",
+        llm_response.get("next_dataset_id", llm_response.get("dataset_id", "")),
+    )
+    next_data_type = llm_response.get("next_data_type", "task")
 
     task.structured_data = {
+        "next_data_id": next_data_id,
         "response": llm_response,
         "previous_sources": new_previous_ids,
         "previous_files": new_previous_files,
         "data_type": data_type,
         "data_id": data_id,
-        "next_data_type": llm_response.get("next_data_type"),
-        "next_data_id": llm_response.get("next_data_id"),
+        "next_data_type": next_data_type,
         "files": files,
     }
 
@@ -323,7 +241,10 @@ def assess_risk_agent(task):
     assessment = ""
     if data_to_analyze:
         assessment = "\n\n---\n\nAnalysis of %s:\n\n" % data_line
-        assessment += llm_response.get("data_assessment", "")
+        assessment += llm_response.get(
+            "dataset_assessment",
+            llm_response.get("dataset_summary", llm_response.get("summary", "")),
+        )
     task.response = analysis_so_far + assessment
     task.mark_complete()
 
@@ -331,25 +252,34 @@ def assess_risk_agent(task):
     if "Iteration" in task.name:
         next_iteration = 1 + int(task.name.split("Iteration")[1].strip())
 
-    go_on = (
-        next_iteration <= max_iterations
-        and llm_response.get("next_data_type") != "none"
-    )
-    if go_on and llm_response.get("next_data_id"):
+    go_on = next_iteration <= max_iterations and next_data_type != "none"
+    if go_on and next_data_id:
         return create_subsequent_task(task, iteration=next_iteration)
     else:
-        report_prompt = get_prompt_from_github("risk-assessment")
-        report_prompt = report_prompt % (
-            today,
-            "\n- ".join([task_to_line_for_llm(t) for t in previous_tasks]),
-        )
-        rating_task = create_subsequent_task(task)
-        rating_task.url = AGENT_REPORT_URL
-        rating_task.prompt = report_prompt
-        rating_task.name = rating_task.name.split(" Iteration")[0] + " Agent Rating"
-        rating_task.flags["tool_key"] = "assess_risks"
-        rating_task.save()
-        return rating_task
+        final_prompt = task.flags.get("final_prompt", "detective-report")
+        report_prompt = get_prompt_from_github(final_prompt)
+        if final_prompt == "risk-assessment":
+            report_prompt = report_prompt % (
+                today,
+                "\n- ".join([task_to_line_for_llm(t) for t in previous_tasks]),
+            )
+        else:
+            report_prompt = report_prompt % (
+                today,
+                last_question,
+                "\n- ".join([task_to_line_for_llm(t) for t in previous_tasks]),
+            )
+        report_name = task.name.split(" Iteration")[0]
+        report_name = report_name.replace("Detective", "Report")
+        report_name = report_name.replace("Agent", "Report")
+        agent_report = create_subsequent_task(task)
+        agent_report.url = AGENT_REPORT_URL
+        agent_report.prompt = report_prompt
+        agent_report.name = report_name or "Agent Report"
+        if final_prompt == "risk-assessmement":
+            agent_report.flags["tool_key"] = "assess_risks"
+        agent_report.save()
+        return agent_report
 
 
 def assess_prs(task):
@@ -412,7 +342,7 @@ def assess_prs(task):
         else:
             prompt = get_prompt_from_github("rate-pr")
             task.prompt = prompt % pr
-        chat_llm(task, diff, tool_key="perform_rating")
+        task.response = chat_llm(task, diff, tool_key="perform_rating")
         rating = json.loads(get_json_from(task.response))
         pr = [p for p in to_assess if p["number"] == number][0]
         rating["pr"] = pr
@@ -442,7 +372,7 @@ def get_issue_info_for(task, pr, number, issue_data):
         llm=GPT_4O_MINI,
     )
     temp.prompt = get_prompt_from_github("identify-issue") % pr
-    chat_llm(temp, issue_data, tool_key="identify_issue")
+    task.response = chat_llm(temp, issue_data, tool_key="identify_issue")
     response = temp.response
     try:
         temp.delete()
@@ -458,3 +388,8 @@ def get_issue_for(key, data):
         if key in issue.strip().splitlines()[0]:
             return issue
     return "Issue not found"
+
+
+def task_to_line_for_llm(task):
+    when = task.created_at.strftime("%Y-%m-%d")
+    return "ID %s - %s on %s " % (task.id, task.name, when)

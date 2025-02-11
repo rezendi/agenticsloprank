@@ -1,7 +1,11 @@
 import os
+
 from anthropic import Anthropic
-from ..util import *
+
 from missions import plugins
+
+from ..functions import get_openai_functions_for
+from ..util import *
 
 # https://cloud.google.com/docs/authentication/provide-credentials-adc#how-to
 
@@ -69,6 +73,18 @@ def chat_claude_json(task, input, tool_key):
         + sized_input
         + "\n</Information>\n"
     )
+    if tool_key:
+        tools = get_openai_functions_for(tool_key)
+        tool_prompt = "\n<OutputFormat/>"
+        tool_prompt += (
+            "\nYour response MUST be in the form of a JSON object like the following:\n"
+        )
+        example_json = generate_example_json(tools[0])
+        tool_prompt += "\n```json\n%s\n```\n" % example_json
+        tool_prompt += "\nNote that all of those fields are mandatory and must be followed exactly.\n"
+        tool_prompt += "\n</OutputFormat/>"
+        final_prompt += tool_prompt
+
     task.extras["task_prompt"] = task_prompt
     task.extras["final_prompt"] = final_prompt
     log("final JSON prompt length", len(final_prompt))
@@ -86,3 +102,56 @@ def chat_claude_json(task, input, tool_key):
     )
     task.response = message.content[0].text
     return task.response
+
+
+def generate_example(schema, key_name=None):
+    """
+    Recursively generate an example value based on a JSON schema.
+    """
+    schema_type = schema.get("type")
+    schema_description = schema.get("description", "")
+
+    if schema_type == "object":
+        example = {}
+        properties = schema.get("properties", {})
+        # If "required" is specified, use those keys; otherwise use all defined properties.
+        keys = schema.get("required", list(properties.keys()))
+        for prop in keys:
+            prop_schema = properties.get(prop, {})
+            example[prop] = generate_example(prop_schema, key_name=prop)
+        return example
+
+    elif schema_type == "array":
+        items_schema = schema.get("items", {})
+        # Create an example array with one item
+        return [generate_example(items_schema)]
+
+    elif schema_type == "string":
+        # You might customize this based on the key or description.
+        # For instance, if the description hints at a multi-paragraph text,
+        # you could provide a longer example.
+        return schema_description if schema_description else "example"
+
+    elif schema_type == "number":
+        desc = schema.get("description", "").lower()
+        # If the description indicates a significance scale of 1 to 5, choose a mid value.
+        if "1 to 5" in desc:
+            return 3
+        return 1
+
+    elif schema_type == "boolean":
+        return True
+
+    # Fallback for types that aren’t explicitly handled.
+    return None
+
+
+def generate_example_json(structured_output_def):
+    """
+    Given an OpenAI Structured Output definition (a dict),
+    generate an example JSON object conforming to its parameters schema.
+    """
+    # In our Structured Output definition, the example JSON is defined
+    # by the "parameters" field inside the "function" key.
+    parameters_schema = structured_output_def.get("function", {}).get("parameters", {})
+    return generate_example(parameters_schema)

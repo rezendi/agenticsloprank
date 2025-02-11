@@ -1,10 +1,13 @@
-import datetime, json, logging
+import datetime
+import json
+import logging
 from types import SimpleNamespace
+
+import stripe
+import tiktoken
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from google.generativeai.generative_models import GenerativeModel  # type: ignore
-import tiktoken
-import stripe
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +66,8 @@ GPT_4O = "gpt-4o-2024-08-06"
 GPT_4O_MINI = "gpt-4o-mini"
 O1_PREVIEW = "o1-preview"
 O1_MINI = "o1-mini"
+O1 = "o1"
+O3_MINI = "o3-mini"
 OPENAI_MODELS = [
     GPT_4_BASE,
     GPT_4O_BASE,
@@ -71,6 +76,8 @@ OPENAI_MODELS = [
     GPT_4O_MINI,
     O1_PREVIEW,
     O1_MINI,
+    O1,
+    O3_MINI,
 ]
 
 GPT_4O_AZURE = "gpt-4o-azure"
@@ -90,9 +97,17 @@ MISTRAL_MODEL = "mistral-medium"
 MISTRAL_MODELS = [MISTRAL_MODEL]
 
 CLAUDE_OPUS = "claude-3-opus-20240229"
-CLAUDE_SONNET = "claude-3-5-sonnet-20240620"
-CLAUDE_HAIKU = "claude-3-haiku-20240307"
-CLAUDE_MODELS = [CLAUDE_OPUS, CLAUDE_SONNET, CLAUDE_HAIKU]
+CLAUDE_SONNET = "claude-3-5-sonnet-20241022"
+CLAUDE_SONNET_LATEST = "claude-3-5-sonnet-latest"
+CLAUDE_HAIKU = "claude-3-5-haiku-20241022"
+CLAUDE_HAIKU_LATEST = "claude-3-5-haiku-latest"
+CLAUDE_MODELS = [
+    CLAUDE_OPUS,
+    CLAUDE_SONNET,
+    CLAUDE_HAIKU,
+    CLAUDE_HAIKU_LATEST,
+    CLAUDE_SONNET_LATEST,
+]
 
 DEEPSEEK_MODEL = "deepseek-reasoner"
 
@@ -112,14 +127,18 @@ TOKEN_LIMITS = {
     GPT_4O_AZURE_MINI: 120000,
     O1_PREVIEW: 100000,
     O1_MINI: 100000,
+    O1: 100000,
+    O3_MINI: 100000,
     MISTRAL_MODEL: 32768,
     GEMINI_1_PRO: 32768,
     GEMINI_1_VISION: 32768,
     GEMINI_1_5_FLASH: 1000000,
     GEMINI_1_5_PRO: 1000000,
     CLAUDE_SONNET: 192000,
+    CLAUDE_SONNET_LATEST: 192000,
     CLAUDE_OPUS: 192000,
     CLAUDE_HAIKU: 192000,
+    CLAUDE_HAIKU_LATEST: 192000,
     NEMOTRON_70B: 120000,
 }
 MAX_THREADED_MSG_LENGTH = 28768  # actually 32K but we want to be safe and not have one message overwhelm the context
@@ -774,18 +793,34 @@ def correct_name(mission):
     return name
 
 
-def task_to_line_for_llm(task):
-    when = task.created_at.strftime("%Y-%m-%d")
-    return "ID %s - %s on %s " % (task.id, task.name, when)
-
-
 def get_json_from(response_text):
     response_text = response_text or ""
+    if response_text.find("<output>") > -1:
+        return response_text.split("<output>")[1].split("</output>")[0].strip()
+    if response_text.find("<result>") > -1:
+        return response_text.split("<output>")[1].split("</result>")[0].strip()
     if response_text.find("```json") > -1:
-        return response_text.split("```json")[1].split("```")[0]
+        return response_text.split("```json")[1].split("```")[0].strip()
     if response_text.find("```") > -1:
-        return response_text.split("```")[1]
+        return response_text.split("```")[1].split("```")[0].strip()
+    if response_text and response_text[0] not in "{[":
+        extracted = extract_first_json(response_text)
+        return extracted or response_text
     return response_text
+
+
+def extract_first_json(text):
+    decoder = json.JSONDecoder()
+    for i, char in enumerate(text):
+        if char in "{[":
+            try:
+                # Attempt to decode a JSON blob starting at this index.
+                obj, _ = decoder.raw_decode(text[i:])
+                return obj
+            except json.JSONDecodeError:
+                # Not valid JSON at this position, keep scanning.
+                continue
+    return None  # No valid JSON blob found.
 
 
 def get_json_from_raw(raw, array_expected=False):
